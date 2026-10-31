@@ -3,64 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gelişmiş Sorgu Paneli v2</title>
+    <title>Gelişmiş Bağımsız Sorgu Paneli v3</title>
     <link rel="stylesheet" href="style.css">
-    <!-- FontAwesome İkonları için -->
     <link rel="stylesheet" href="https://cloudflare.com">
 </head>
 <body>
 
     <div class="dashboard-container">
-        <!-- Sol Menü (Sidebar) -->
+        <!-- Sol Menü -->
         <aside class="sidebar">
             <div class="logo">
-                <i class="fa-solid fa-shield-halved"></i> <span>SorguPanel v2</span>
+                <i class="fa-solid fa-terminal"></i> <span>SorguPanel v3</span>
             </div>
             <nav class="menu">
-                <a href="#" class="active" data-target="tc-sorgu"><i class="fa-solid fa-user-shield"></i> TC Sorguları</a>
-                <a href="#" data-target="gsm-sorgu"><i class="fa-solid fa-phone"></i> GSM Sorguları</a>
-                <a href="#" data-target="tapu-sorgu"><i class="fa-solid fa-map-location-dot"></i> Tapu & Parsel</a>
+                <a href="#" class="active" data-target="tc-sorgu"><i class="fa-solid fa-id-card"></i> TC Tabanlı API'ler</a>
+                <a href="#" data-target="gsm-sorgu"><i class="fa-solid fa-mobile-screen-button"></i> GSM Tabanlı API'ler</a>
+                <a href="#" data-target="ada-sorgu"><i class="fa-solid fa-map-location"></i> Ada / Parsel API</a>
             </nav>
         </aside>
 
-        <!-- Sağ Ana İçerik Alanı -->
+        <!-- Sağ Ana İçerik -->
         <main class="main-content">
             <header class="top-bar">
-                <h1><i class="fa-solid fa-magnifying-glass"></i> Dinamik Veri Sorgulama Merkezi</h1>
-                <div class="status"><span class="dot"></span> Sistem Aktif</div>
+                <h1><i class="fa-solid fa-network-wired"></i> Bağımsız API Sorgu ve Yönetim Merkezi</h1>
+                <div class="status"><span class="dot"></span> Netlify Canlıda</div>
             </header>
 
-            <!-- ARAMA BLOKLARI -->
+            <!-- ARAMA PANELİ -->
             <section class="search-section">
-                <!-- TC Arama Girişi -->
+                <!-- TC Giriş Alanı -->
                 <div id="tc-search-box" class="search-box">
-                    <input type="text" id="tcInput" placeholder="Sorgulanacak TC Kimlik Numarasını Giriniz..." maxlength="11">
-                    <button id="btnTcSorgula"><i class="fa-solid fa-bolt"></i> Geniş Kapsamlı Sorgula</button>
+                    <input type="text" id="tcInput" placeholder="Sorgulanacak TC Kimlik Numarasını Girin..." maxlength="11">
+                    <button id="btnTcSorgula"><i class="fa-solid fa-circle-play"></i> Tüm TC API'lerini Tetikle</button>
                 </div>
 
-                <!-- GSM Arama Girişi (Menüden seçilince açılır) -->
+                <!-- GSM Giriş Alanı -->
                 <div id="gsm-search-box" class="search-box hidden">
                     <input type="text" id="gsmInput" placeholder="Örn: 5550000000">
-                    <button id="btnGsmSorgula"><i class="fa-solid fa-bolt"></i> GSM Sorgula</button>
+                    <button id="btnGsmSorgula"><i class="fa-solid fa-circle-play"></i> GSM API Tetikle</button>
                 </div>
 
-                <!-- Ada Parsel Arama Girişi (Menüden seçilince açılır) -->
+                <!-- Ada Parsel Giriş Alanı -->
                 <div id="ada-search-box" class="search-box hidden">
                     <input type="text" id="ilInput" placeholder="İl (Örn: İSTANBUL)">
                     <input type="text" id="ilceInput" placeholder="İlçe (Örn: KADIKÖY)">
-                    <button id="btnAdaSorgula"><i class="fa-solid fa-bolt"></i> Ada/Parsel Sorgula</button>
+                    <button id="btnAdaSorgula"><i class="fa-solid fa-circle-play"></i> Ada/Parsel API Tetikle</button>
                 </div>
             </section>
 
-            <!-- YÜKLENİYOR SİMGESİ -->
-            <div id="loader" class="loader hidden">
-                <div class="spinner"></div>
-                <p>Veriler API kanallarından çekiliyor, lütfen bekleyin...</p>
-            </div>
+            <!-- CANLI SİSTEM LOGLARI (YENİ) -->
+            <section class="log-section">
+                <div class="log-header">
+                    <span><i class="fa-solid fa-rectangle-list"></i> Canlı Sistem Logları (Console)</span>
+                    <button id="btnClearLogs"><i class="fa-solid fa-trash-can"></i> Temizle</button>
+                </div>
+                <div id="logConsole" class="log-console">
+                    <div class="log-line system">[SİSTEM] Panel başarıyla yüklendi. Sorgu bekleniyor...</div>
+                </div>
+            </section>
 
-            <!-- SONUÇ KARTLARI PANELİ -->
+            <!-- SONUÇ KARTLARI -->
             <section id="results-grid" class="results-grid">
-                <!-- Kartlar app.js tarafından buraya dinamik olarak basılacak -->
+                <!-- API sonuçları buraya bağımsız kartlar olarak düşecek -->
             </section>
         </main>
     </div>
