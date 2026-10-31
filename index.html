@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelişmiş Sorgu Paneli v2</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome İkonları için -->
+    <link rel="stylesheet" href="https://cloudflare.com">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sol Menü (Sidebar) -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-shield-halved"></i> <span>SorguPanel v2</span>
+            </div>
+            <nav class="menu">
+                <a href="#" class="active" data-target="tc-sorgu"><i class="fa-solid fa-user-shield"></i> TC Sorguları</a>
+                <a href="#" data-target="gsm-sorgu"><i class="fa-solid fa-phone"></i> GSM Sorguları</a>
+                <a href="#" data-target="tapu-sorgu"><i class="fa-solid fa-map-location-dot"></i> Tapu & Parsel</a>
+            </nav>
+        </aside>
+
+        <!-- Sağ Ana İçerik Alanı -->
+        <main class="main-content">
+            <header class="top-bar">
+                <h1><i class="fa-solid fa-magnifying-glass"></i> Dinamik Veri Sorgulama Merkezi</h1>
+                <div class="status"><span class="dot"></span> Sistem Aktif</div>
+            </header>
+
+            <!-- ARAMA BLOKLARI -->
+            <section class="search-section">
+                <!-- TC Arama Girişi -->
+                <div id="tc-search-box" class="search-box">
+                    <input type="text" id="tcInput" placeholder="Sorgulanacak TC Kimlik Numarasını Giriniz..." maxlength="11">
+                    <button id="btnTcSorgula"><i class="fa-solid fa-bolt"></i> Geniş Kapsamlı Sorgula</button>
+                </div>
+
+                <!-- GSM Arama Girişi (Menüden seçilince açılır) -->
+                <div id="gsm-search-box" class="search-box hidden">
+                    <input type="text" id="gsmInput" placeholder="Örn: 5550000000">
+                    <button id="btnGsmSorgula"><i class="fa-solid fa-bolt"></i> GSM Sorgula</button>
+                </div>
+
+                <!-- Ada Parsel Arama Girişi (Menüden seçilince açılır) -->
+                <div id="ada-search-box" class="search-box hidden">
+                    <input type="text" id="ilInput" placeholder="İl (Örn: İSTANBUL)">
+                    <input type="text" id="ilceInput" placeholder="İlçe (Örn: KADIKÖY)">
+                    <button id="btnAdaSorgula"><i class="fa-solid fa-bolt"></i> Ada/Parsel Sorgula</button>
+                </div>
+            </section>
+
+            <!-- YÜKLENİYOR SİMGESİ -->
+            <div id="loader" class="loader hidden">
+                <div class="spinner"></div>
+                <p>Veriler API kanallarından çekiliyor, lütfen bekleyin...</p>
+            </div>
+
+            <!-- SONUÇ KARTLARI PANELİ -->
+            <section id="results-grid" class="results-grid">
+                <!-- Kartlar app.js tarafından buraya dinamik olarak basılacak -->
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
