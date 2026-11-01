@@ -4,6 +4,7 @@
     --accent-blue: #3b82f6;
     --accent-green: #10b981;
     --accent-red: #ef4444;
+    --accent-orange: #f59e0b;
     --text-main: #f3f4f6;
     --text-muted: #9ca3af;
     --card-bg: #1f2937;
@@ -19,7 +20,7 @@ body { background-color: var(--bg-dark); color: var(--text-main); }
 .sidebar { width: 300px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border-color); padding: 20px; display: flex; flex-direction: column; }
 .sidebar .logo { font-size: 22px; font-weight: bold; color: #60a5fa; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; font-family: monospace; }
 .menu-category { font-size: 11px; font-weight: bold; color: #4b5563; margin: 15px 0 5px 5px; letter-spacing: 1px; }
-.sidebar .menu a { display: flex; align-items: center; gap: 12px; color: var(--text-muted); text-decoration: none; padding: 12px; border-radius: 8px; margin-bottom: 5px; font-size: 14px; transition: all 0.2s; }
+.sidebar .menu a { display: flex; align-items: center; gap: 12px; color: var(--text-muted); text-decoration: none; padding: 12px; border-radius: 8px; margin-bottom: 5px; font-size: 14px; transition: all 0.2s; cursor: pointer; }
 .sidebar .menu a:hover { background-color: #1f2937; color: white; }
 .sidebar .menu a.active { background-color: var(--accent-blue); color: white; font-weight: 600; }
 
@@ -43,9 +44,9 @@ body { background-color: var(--bg-dark); color: var(--text-main); }
 .log-header { background: #111827; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #60a5fa; border-bottom: 1px solid var(--border-color); }
 .log-header button { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 12px; }
 .log-header button:hover { color: #f87171; }
-.log-console { padding: 15px; height: 120px; overflow-y: auto; font-family: monospace; font-size: 12px; line-height: 1.6; }
+.log-console { padding: 15px; height: 140px; overflow-y: auto; font-family: monospace; font-size: 12px; line-height: 1.6; border: 1px solid #1e293b; }
 .log-line { margin-bottom: 4px; }
-.log-line.system { color: #9ca3af; }
+.log-line system { color: #9ca3af; }
 .log-line.info { color: #38bdf8; }
 .log-line.success { color: #4ade80; }
 .log-line.error { color: #f87171; }
@@ -55,12 +56,14 @@ body { background-color: var(--bg-dark); color: var(--text-main); }
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); height: 200px; gap: 15px; }
 .empty-state i { font-size: 48px; color: #374151; }
 
-.result-card h2 { color: #60a5fa; font-size: 18px; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
+.result-card h2 { font-size: 18px; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
+.result-card.searching h2 { color: var(--accent-orange); }
+.result-card.success h2 { color: #60a5fa; }
 .api-link-box { background: #030712; padding: 10px; border-radius: 6px; font-size: 12px; color: #fbbf24; word-break: break-all; margin-bottom: 20px; border: 1px dashed #4b5563; font-family: monospace; }
 .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
-.data-item { background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; font-size: 14px; }
-.data-item .label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: bold; }
-.data-item .value { color: var(--text-main); font-weight: 500; }
+.data-item { background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; font-size: 14px; word-break: break-all; gap: 10px; }
+.data-item .label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: bold; flex-shrink: 0; }
+.data-item .value { color: var(--text-main); font-weight: 500; text-align: right; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
