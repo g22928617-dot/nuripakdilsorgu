@@ -1,113 +1,209 @@
+```html
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Çoklu Sekme Bağımsız Sorgu Paneli v5</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cloudflare.com">
+    <title>Modern Sorgu Paneli</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --bg-color: #0f172a;
+            --sidebar-color: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #38bdf8;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-color);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255,255,255,0.1);
+            transition: var(--transition);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            margin-bottom: 20px;
+        }
+
+        .nav-list {
+            list-style: none;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+            color: #94a3b8;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(99, 102, 241, 0.1);
+            color: white;
+        }
+
+        .nav-item.active {
+            background-color: rgba(99, 102, 241, 0.2);
+            color: white;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .query-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-submit:hover {
+            background: #4f46e5;
+            transform: translateY(-2px);
+        }
+
+        #result-area {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.2);
+            display: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', Courier, monospace;
+            border: 1px solid #334155;
+            color: var(--accent-color);
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="dashboard-container">
-        <!-- Sol Menü (Sidebar) -->
-        <aside class="sidebar">
-            <div class="logo">
-                <i class="fa-solid fa-terminal"></i> <span>SorguPanel v5</span>
-            </div>
-            <nav class="menu">
-                <div class="menu-category">TC TABANLI SORGULAR</div>
-                <a href="#" class="active" data-target="sec-aile" onclick="switchTab(this, 'sec-aile', 'Aile Sorgu')"><i class="fa-solid fa-users"></i> Aile Sorgu</a>
-                <a href="#" data-target="sec-ailepro" onclick="switchTab(this, 'sec-ailepro', 'Aile Pro Sorgu')"><i class="fa-solid fa-users-gear"></i> Aile Pro Sorgu</a>
-                <a href="#" data-target="sec-sulale" onclick="switchTab(this, 'sec-sulale', 'Sülale Sorgu')"><i class="fa-solid fa-sitemap"></i> Sülale Sorgu</a>
-                <a href="#" data-target="sec-tcgsm" onclick="switchTab(this, 'sec-tcgsm', 'TC GSM Sorgu')"><i class="fa-solid fa-address-book"></i> TC GSM Sorgu</a>
-                <a href="#" data-target="sec-eokul" onclick="switchTab(this, 'sec-eokul', 'E-Okul Sorgu')"><i class="fa-solid fa-graduation-cap"></i> E-Okul Sorgu</a>
-                <a href="#" data-target="sec-adres" onclick="switchTab(this, 'sec-adres', 'Adres Sorgu')"><i class="fa-solid fa-location-dot"></i> Adres Sorgu</a>
-                <a href="#" data-target="sec-tapu" onclick="switchTab(this, 'sec-tapu', 'Tapu Sorgu')"><i class="fa-solid fa-house-lock"></i> Tapu Sorgu</a>
-                <a href="#" data-target="sec-tcpro" onclick="switchTab(this, 'sec-tcpro', 'TC Pro Sorgu')"><i class="fa-solid fa-id-card-clip"></i> TC Pro Sorgu</a>
-                
-                <div class="menu-category">KONUM SORGULARI</div>
-                <a href="#" data-target="sec-adaparsel" onclick="switchTab(this, 'sec-adaparsel', 'Ada / Parsel Sorgu')"><i class="fa-solid fa-map-location-dot"></i> Ada / Parsel Sorgu</a>
-            </nav>
-        </aside>
-
-        <!-- Sağ Ana İçerik Alanı -->
-        <main class="main-content">
-            <header class="top-bar">
-                <h1><i class="fa-solid fa-network-wired"></i> <span id="current-panel-title">Aile Sorgu Paneli</span></h1>
-                <div class="status"><span class="dot"></span> Netlify Aktif</div>
-            </header>
-
-            <!-- SORGULAMA SEKMELERİ -->
-            <section class="search-section">
-                <div id="sec-aile" class="search-box">
-                    <input type="text" id="input-aile" placeholder="Aile bilgisi için 11 haneli TC girin..." maxlength="11">
-                    <button id="btn-aile"><i class="fa-solid fa-magnifying-glass"></i> Aile Sorgula</button>
-                </div>
-
-                <div id="sec-ailepro" class="search-box hidden">
-                    <input type="text" id="input-ailepro" placeholder="Aile Pro bilgisi için 11 haneli TC girin..." maxlength="11">
-                    <button id="btn-ailepro"><i class="fa-solid fa-magnifying-glass"></i> Aile Pro Sorgula</button>
-                </div>
-
-                <div id="sec-sulale" class="search-box hidden">
-                    <input type="text" id="input-sulale" placeholder="Sülale bilgisi için 11 haneli TC girin..." maxlength="11">
-                    <button id="btn-sulale"><i class="fa-solid fa-magnifying-glass"></i> Sülale Sorgula</button>
-                </div>
-
-                <div id="sec-tcgsm" class="search-box hidden">
-                    <input type="text" id="input-tcgsm" placeholder="TC GSM bağlantısı için 11 haneli TC girin..." maxlength="11">
-                    <button id="btn-tcgsm"><i class="fa-solid fa-magnifying-glass"></i> GSM Sorgula</button>
-                </div>
-
-                <div id="sec-eokul" class="search-box hidden">
-                    <input type="text" id="input-eokul" placeholder="E-Okul verisi için 11 haneli TC girin..." maxlength="11">
-                    <button id="btn-eokul"><i class="fa-solid fa-magnifying-glass"></i> E-Okul Sorgula</button>
-                </div>
-
-                <div id="sec-adres" class="search-box hidden">
-                    <input type="text" id="input-adres" placeholder="Adres verisi için 11 haneli TC girin..." maxlength="11">
-                    <button id="btn-adres"><i class="fa-solid fa-magnifying-glass"></i> Adres Sorgula</button>
-                </div>
-
-                <div id="sec-tapu" class="search-box hidden">
-                    <input type="text" id="input-tapu" placeholder="Tapu kaydı için 11 haneli TC girin..." maxlength="11">
-                    <button id="btn-tapu"><i class="fa-solid fa-magnifying-glass"></i> Tapu Sorgula</button>
-                </div>
-
-                <div id="sec-tcpro" class="search-box hidden">
-                    <input type="text" id="input-tcpro" placeholder="TC Pro detayları için 11 haneli TC girin..." maxlength="11">
-                    <button id="btn-tcpro"><i class="fa-solid fa-magnifying-glass"></i> TC Pro Sorgula</button>
-                </div>
-
-                <div id="sec-adaparsel" class="search-box hidden">
-                    <input type="text" id="ilInput" placeholder="İl (Örn: İSTANBUL)">
-                    <input type="text" id="ilceInput" placeholder="İlçe (Örn: KADIKÖY)">
-                    <button id="btn-adaparsel"><i class="fa-solid fa-magnifying-glass"></i> Ada/Parsel Sorgula</button>
-                </div>
-            </section>
-
-            <!-- CANLI SİSTEM LOGLARI -->
-            <section class="log-section">
-                <div class="log-header">
-                    <span><i class="fa-solid fa-rectangle-list"></i> Canlı Terminal Logları</span>
-                    <button id="btnClearLogs"><i class="fa-solid fa-trash-can"></i> Temizle</button>
-                </div>
-                <div id="logConsole" class="log-console">
-                    <div class="log-line system">[SİSTEM] Panel yükleme başarılı. İşlem bekleniyor...</div>
-                </div>
-            </section>
-
-            <!-- SONUÇ EKRANI -->
-            <section id="results-container" class="results-container">
-                <div class="empty-state">
-                    <i class="fa-solid fa-folder-open"></i>
-                    <p>Henüz bir sorgulama yapılmadı. Lütfen yukarıdan veri girip sorgulayın.</p>
-                </div>
-            </section>
-        </main>
+    <div class="sidebar">
+        <div class="sidebar-header">SORGUPANEL V2</div>
+        <ul class="nav-list">
+            <li class="nav-item active" data-api="https://apiv2.ajaxsystems.fun/tcpro.php">
+                <i class="fa-solid fa-id-card"></i> TC Pro Sorgu
+            </li>
+            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/adsoyad.php">
+                <i class="fa-solid fa-user"></i> Ad Soyad Sorgu
+            </li>
+            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/ailepro.php">
+                <i class="fa-solid fa-users"></i> Aile Pro Sorgu
+            </li>
+            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/sulale.php">
+                <i class="fa-solid fa-sitemap"></i> Sülale Sorgu
+            </li>
+            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/tcgsm.php">
+                <i class="fa-solid fa-mobile-screen"></i> TC'den GSM
+            </li>
+            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/gsmtc.php">
+                <i class="fa-solid fa-phone"></i> GSM'den TC
+            </li>
+            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/eokul.php">
+                <i class="fa-solid fa-graduation-cap"></i> E-Okul Sorgu
+            </li>
+            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/adres.php">
+                <i class="fa-solid fa-location-dot"></i> Adres Sorgu
+            </li>
+            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/adaparsel.php">
+                <i class="fa-solid fa-map"></i> Ada Parsel Sorgu
+            </li>
+        </ul>
     </div>
 
-    <script src="app.js"></script>
-</body>
-</html>
+    <div class="main-content">
+        <div class="query
