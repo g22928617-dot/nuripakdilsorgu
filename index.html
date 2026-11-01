@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorgu Paneli</title>
+    <title>Sorgu Paneli - CORS Çözümlü</title>
     <style>
         :root {
             --bg-color: #f4f6f9;
@@ -363,7 +363,7 @@
             if(clickedBtn) clickedBtn.classList.add('active');
         }
 
-        // Fetch Data Logic
+        // Fetch Data Logic with CORS Proxy
         async function fetchData(apiName, paramType, inputId, isMultiParam = false) {
             const resultDiv = document.getElementById(`result_${apiName}`);
             let url = `https://apiv2.ajaxsystems.fun/${apiName}.php`;
@@ -405,8 +405,12 @@
                 // Construct full URL
                 const finalUrl = `${url}?${params.toString()}`;
 
-                // Fetch
-                const response = await fetch(finalUrl);
+                // Use a CORS proxy to bypass browser restrictions
+                // We use 'api.allorigins.win' as a reliable public proxy
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(finalUrl)}`;
+
+                // Fetch via proxy
+                const response = await fetch(proxyUrl);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP Hatası: ${response.status}`);
@@ -414,9 +418,12 @@
 
                 const data = await response.json();
                 
+                // The proxy returns the actual API response in data.contents
+                const apiResponse = JSON.parse(data.contents);
+
                 // Display Result
                 resultDiv.className = 'result-area success';
-                resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                resultDiv.innerHTML = `<pre>${JSON.stringify(apiResponse, null, 2)}</pre>`;
 
             } catch (error) {
                 resultDiv.className = 'result-area error';
