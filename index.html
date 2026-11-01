@@ -101,7 +101,7 @@
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            to { opacity: 1; transform: translateY(0);
         }
 
         .query-card h3 {
@@ -381,7 +381,7 @@
             if(clickedBtn) clickedBtn.classList.add('active');
         }
 
-        // Fetch Data Logic with CORS Proxy
+        // Fetch Data Logic with CORS Proxy and Timeout
         async function fetchData(apiName, paramType, inputId, isMultiParam = false) {
             const resultDiv = document.getElementById(`result_${apiName}`);
             let url = `https://apiv2.ajaxsystems.fun/${apiName}.php`;
@@ -432,8 +432,16 @@
                 // We use 'api.allorigins.win' as a reliable public proxy
                 const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(finalUrl)}`;
 
-                // Fetch via proxy
-                const response = await fetch(proxyUrl);
+                // Create a timeout promise
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error("Sorgu süresi doldu (30 saniye).")), 30000);
+                });
+
+                // Fetch via proxy with timeout
+                const response = await Promise.race([
+                    fetch(proxyUrl),
+                    timeoutPromise
+                ]);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP Hatası: ${response.status}`);
@@ -471,4 +479,3 @@
         }
     </script>
 </body>
-</html>
