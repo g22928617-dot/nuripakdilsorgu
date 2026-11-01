@@ -188,6 +188,24 @@
             text-align: left;
             white-space: pre-wrap;
         }
+
+        ul.result-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul.result-list li {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        ul.result-list li:last-child {
+            border-bottom: none;
+        }
+
+        ul.result-list li strong {
+            color: var(--active-tab);
+        }
         
         /* Responsive */
         @media (max-width: 768px) {
@@ -380,8 +398,13 @@
                     if (!name || !surname) {
                         throw new Error("Lütfen Ad ve Soyad alanlarını doldurun.");
                     }
+                    // Try different parameter names to find what works
                     params.append('name', name);
                     params.append('surname', surname);
+                    
+                    // Also try alternative parameter names
+                    params.append('ad', name);
+                    params.append('soyad', surname);
                 } else if (paramType === 'tc') {
                     const value = document.getElementById(inputId).value.trim();
                     if (!value) {
@@ -423,7 +446,23 @@
 
                 // Display Result
                 resultDiv.className = 'result-area success';
-                resultDiv.innerHTML = `<pre>${JSON.stringify(apiResponse, null, 2)}</pre>`;
+                
+                // Check if the API returned an error
+                if (apiResponse.success === "false") {
+                    resultDiv.innerHTML = `<p style="color: var(--error-color);">${apiResponse.message}</p>`;
+                    return;
+                }
+
+                // If the result is an array (multiple results), display as a list
+                if (Array.isArray(apiResponse)) {
+                    resultDiv.innerHTML = '<ul class="result-list">';
+                    apiResponse.forEach((item, index) => {
+                        resultDiv.innerHTML += `<li><strong>${index + 1}.</strong> ${JSON.stringify(item)}</li>`;
+                    });
+                    resultDiv.innerHTML += '</ul>';
+                } else {
+                    resultDiv.innerHTML = `<pre>${JSON.stringify(apiResponse, null, 2)}</pre>`;
+                }
 
             } catch (error) {
                 resultDiv.className = 'result-area error';
