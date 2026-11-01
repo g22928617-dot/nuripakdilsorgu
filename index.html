@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Çoklu Sekme Bağımsız Sorgu Paneli v4</title>
+    <title>Çoklu Sekme Bağımsız Sorgu Paneli v5</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cloudflare.com">
 </head>
@@ -13,21 +13,21 @@
         <!-- Sol Menü (Sidebar) -->
         <aside class="sidebar">
             <div class="logo">
-                <i class="fa-solid fa-terminal"></i> <span>SorguPanel v4</span>
+                <i class="fa-solid fa-terminal"></i> <span>SorguPanel v5</span>
             </div>
             <nav class="menu">
                 <div class="menu-category">TC TABANLI SORGULAR</div>
-                <a href="#" class="active" data-target="sec-aile"><i class="fa-solid fa-users"></i> Aile Sorgu</a>
-                <a href="#" data-target="sec-ailepro"><i class="fa-solid fa-users-gear"></i> Aile Pro Sorgu</a>
-                <a href="#" data-target="sec-sulale"><i class="fa-solid fa-sitemap"></i> Sülale Sorgu</a>
-                <a href="#" data-target="sec-tcgsm"><i class="fa-solid fa-address-book"></i> TC GSM Sorgu</a>
-                <a href="#" data-target="sec-eokul"><i class="fa-solid fa-graduation-cap"></i> E-Okul Sorgu</a>
-                <a href="#" data-target="sec-adres"><i class="fa-solid fa-location-dot"></i> Adres Sorgu</a>
-                <a href="#" data-target="sec-tapu"><i class="fa-solid fa-house-lock"></i> Tapu Sorgu</a>
-                <a href="#" data-target="sec-tcpro"><i class="fa-solid fa-id-card-clip"></i> TC Pro Sorgu</a>
+                <a href="#" class="active" data-target="sec-aile" onclick="switchTab(this, 'sec-aile', 'Aile Sorgu')"><i class="fa-solid fa-users"></i> Aile Sorgu</a>
+                <a href="#" data-target="sec-ailepro" onclick="switchTab(this, 'sec-ailepro', 'Aile Pro Sorgu')"><i class="fa-solid fa-users-gear"></i> Aile Pro Sorgu</a>
+                <a href="#" data-target="sec-sulale" onclick="switchTab(this, 'sec-sulale', 'Sülale Sorgu')"><i class="fa-solid fa-sitemap"></i> Sülale Sorgu</a>
+                <a href="#" data-target="sec-tcgsm" onclick="switchTab(this, 'sec-tcgsm', 'TC GSM Sorgu')"><i class="fa-solid fa-address-book"></i> TC GSM Sorgu</a>
+                <a href="#" data-target="sec-eokul" onclick="switchTab(this, 'sec-eokul', 'E-Okul Sorgu')"><i class="fa-solid fa-graduation-cap"></i> E-Okul Sorgu</a>
+                <a href="#" data-target="sec-adres" onclick="switchTab(this, 'sec-adres', 'Adres Sorgu')"><i class="fa-solid fa-location-dot"></i> Adres Sorgu</a>
+                <a href="#" data-target="sec-tapu" onclick="switchTab(this, 'sec-tapu', 'Tapu Sorgu')"><i class="fa-solid fa-house-lock"></i> Tapu Sorgu</a>
+                <a href="#" data-target="sec-tcpro" onclick="switchTab(this, 'sec-tcpro', 'TC Pro Sorgu')"><i class="fa-solid fa-id-card-clip"></i> TC Pro Sorgu</a>
                 
                 <div class="menu-category">KONUM SORGULARI</div>
-                <a href="#" data-target="sec-adaparsel"><i class="fa-solid fa-map-location-dot"></i> Ada / Parsel Sorgu</a>
+                <a href="#" data-target="sec-adaparsel" onclick="switchTab(this, 'sec-adaparsel', 'Ada / Parsel Sorgu')"><i class="fa-solid fa-map-location-dot"></i> Ada / Parsel Sorgu</a>
             </nav>
         </aside>
 
@@ -38,61 +38,52 @@
                 <div class="status"><span class="dot"></span> Netlify Aktif</div>
             </header>
 
-            <!-- AYRI AYRI SORGULAMA SEKMELERİ (INPUT ALANLARI) -->
+            <!-- SORGULAMA SEKMELERİ -->
             <section class="search-section">
-                <!-- Aile Sorgu -->
                 <div id="sec-aile" class="search-box">
-                    <input type="text" class="tc-input" placeholder="Aile bilgisi için 11 haneli TC girin..." maxlength="11">
-                    <button class="btn-sorgula" data-api="aile"><i class="fa-solid fa-magnifying-glass"></i> Aile Sorgula</button>
+                    <input type="text" id="input-aile" placeholder="Aile bilgisi için 11 haneli TC girin..." maxlength="11">
+                    <button id="btn-aile"><i class="fa-solid fa-magnifying-glass"></i> Aile Sorgula</button>
                 </div>
 
-                <!-- Aile Pro Sorgu -->
                 <div id="sec-ailepro" class="search-box hidden">
-                    <input type="text" class="tc-input" placeholder="Aile Pro bilgisi için 11 haneli TC girin..." maxlength="11">
-                    <button class="btn-sorgula" data-api="ailepro"><i class="fa-solid fa-magnifying-glass"></i> Aile Pro Sorgula</button>
+                    <input type="text" id="input-ailepro" placeholder="Aile Pro bilgisi için 11 haneli TC girin..." maxlength="11">
+                    <button id="btn-ailepro"><i class="fa-solid fa-magnifying-glass"></i> Aile Pro Sorgula</button>
                 </div>
 
-                <!-- Sülale Sorgu -->
                 <div id="sec-sulale" class="search-box hidden">
-                    <input type="text" class="tc-input" placeholder="Sülale bilgisi için 11 haneli TC girin..." maxlength="11">
-                    <button class="btn-sorgula" data-api="sulale"><i class="fa-solid fa-magnifying-glass"></i> Sülale Sorgula</button>
+                    <input type="text" id="input-sulale" placeholder="Sülale bilgisi için 11 haneli TC girin..." maxlength="11">
+                    <button id="btn-sulale"><i class="fa-solid fa-magnifying-glass"></i> Sülale Sorgula</button>
                 </div>
 
-                <!-- TC GSM Sorgu -->
                 <div id="sec-tcgsm" class="search-box hidden">
-                    <input type="text" class="tc-input" placeholder="TC GSM bağlantısı için 11 haneli TC girin..." maxlength="11">
-                    <button class="btn-sorgula" data-api="tcgsm"><i class="fa-solid fa-magnifying-glass"></i> GSM Sorgula</button>
+                    <input type="text" id="input-tcgsm" placeholder="TC GSM bağlantısı için 11 haneli TC girin..." maxlength="11">
+                    <button id="btn-tcgsm"><i class="fa-solid fa-magnifying-glass"></i> GSM Sorgula</button>
                 </div>
 
-                <!-- E-Okul Sorgu -->
                 <div id="sec-eokul" class="search-box hidden">
-                    <input type="text" class="tc-input" placeholder="E-Okul verisi için 11 haneli TC girin..." maxlength="11">
-                    <button class="btn-sorgula" data-api="eokul"><i class="fa-solid fa-magnifying-glass"></i> E-Okul Sorgula</button>
+                    <input type="text" id="input-eokul" placeholder="E-Okul verisi için 11 haneli TC girin..." maxlength="11">
+                    <button id="btn-eokul"><i class="fa-solid fa-magnifying-glass"></i> E-Okul Sorgula</button>
                 </div>
 
-                <!-- Adres Sorgu -->
                 <div id="sec-adres" class="search-box hidden">
-                    <input type="text" class="tc-input" placeholder="Adres verisi için 11 haneli TC girin..." maxlength="11">
-                    <button class="btn-sorgula" data-api="adres"><i class="fa-solid fa-magnifying-glass"></i> Adres Sorgula</button>
+                    <input type="text" id="input-adres" placeholder="Adres verisi için 11 haneli TC girin..." maxlength="11">
+                    <button id="btn-adres"><i class="fa-solid fa-magnifying-glass"></i> Adres Sorgula</button>
                 </div>
 
-                <!-- Tapu Sorgu -->
                 <div id="sec-tapu" class="search-box hidden">
-                    <input type="text" class="tc-input" placeholder="Tapu kaydı için 11 haneli TC girin..." maxlength="11">
-                    <button class="btn-sorgula" data-api="tapu"><i class="fa-solid fa-magnifying-glass"></i> Tapu Sorgula</button>
+                    <input type="text" id="input-tapu" placeholder="Tapu kaydı için 11 haneli TC girin..." maxlength="11">
+                    <button id="btn-tapu"><i class="fa-solid fa-magnifying-glass"></i> Tapu Sorgula</button>
                 </div>
 
-                <!-- TC Pro Sorgu -->
                 <div id="sec-tcpro" class="search-box hidden">
-                    <input type="text" class="tc-input" placeholder="TC Pro detayları için 11 haneli TC girin..." maxlength="11">
-                    <button class="btn-sorgula" data-api="tcpro"><i class="fa-solid fa-magnifying-glass"></i> TC Pro Sorgula</button>
+                    <input type="text" id="input-tcpro" placeholder="TC Pro detayları için 11 haneli TC girin..." maxlength="11">
+                    <button id="btn-tcpro"><i class="fa-solid fa-magnifying-glass"></i> TC Pro Sorgula</button>
                 </div>
 
-                <!-- Ada Parsel Sorgu (Farklı Input Yapısı) -->
                 <div id="sec-adaparsel" class="search-box hidden">
                     <input type="text" id="ilInput" placeholder="İl (Örn: İSTANBUL)">
                     <input type="text" id="ilceInput" placeholder="İlçe (Örn: KADIKÖY)">
-                    <button class="btn-sorgula" data-api="adaparsel"><i class="fa-solid fa-magnifying-glass"></i> Ada/Parsel Sorgula</button>
+                    <button id="btn-adaparsel"><i class="fa-solid fa-magnifying-glass"></i> Ada/Parsel Sorgula</button>
                 </div>
             </section>
 
@@ -103,13 +94,12 @@
                     <button id="btnClearLogs"><i class="fa-solid fa-trash-can"></i> Temizle</button>
                 </div>
                 <div id="logConsole" class="log-console">
-                    <div class="log-line system">[SİSTEM] Tüm sekmeler bağımsız hale getirildi. Sorgu aranıyor...</div>
+                    <div class="log-line system">[SİSTEM] Panel yükleme başarılı. İşlem bekleniyor...</div>
                 </div>
             </section>
 
             <!-- SONUÇ EKRANI -->
             <section id="results-container" class="results-container">
-                <!-- Sorgulanan sekmenin sonucu buraya şık bir panel olarak düşecek -->
                 <div class="empty-state">
                     <i class="fa-solid fa-folder-open"></i>
                     <p>Henüz bir sorgulama yapılmadı. Lütfen yukarıdan veri girip sorgulayın.</p>
@@ -121,4 +111,3 @@
     <script src="app.js"></script>
 </body>
 </html>
-
