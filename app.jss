@@ -1,32 +1,25 @@
-const BASE_URL = "https://apiv2.ajaxsystems.fun";
+const BASE_URL = "https://ajaxsystems.fun";
 
-// Menü ve Panel Yönetimi
-const menuLinks = document.querySelectorAll('.sidebar .menu a');
-menuLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        menuLinks.forEach(l => l.classList.remove('active'));
-        link.classList.add('active');
-        
-        const targetSectionId = link.getAttribute('data-target');
-        const panelTitle = link.innerText.trim();
-        
-        // Başlığı güncelle
-        document.getElementById('current-panel-title').innerText = panelTitle + " Paneli";
+// 1. Sekme Değiştirme Motoru (Doğrudan Çağrılır - Bug Korumalı)
+function switchTab(element, sectionId, title) {
+    // Menü aktifliğini güncelle
+    document.querySelectorAll('.sidebar .menu a').forEach(link => link.classList.remove('active'));
+    element.classList.add('active');
+    
+    // Üst başlığı değiştir
+    document.getElementById('current-panel-title').innerText = title + " Paneli";
 
-        // Tüm arama kutularını gizle, sadece seçileni göster
-        document.querySelectorAll('.search-section .search-box').forEach(box => {
-            box.classList.add('hidden');
-        });
-        document.getElementById(targetSectionId).classList.remove('hidden');
-        
-        addLog(`Sekme Değiştirildi: ${panelTitle} alanına geçildi.`, "system");
-    });
-});
+    // Tüm arama panellerini gizle, sadece seçileni aç
+    document.querySelectorAll('.search-section .search-box').forEach(box => box.classList.add('hidden'));
+    document.getElementById(sectionId).classList.remove('hidden');
+    
+    addLog(`Sekme Aktif: ${title} arama moduna geçildi.`, "system");
+}
 
-// Detaylı Log Konsolu Fonksiyonu
+// 2. Anlık Loglama Konsol Motoru
 function addLog(text, type = 'info') {
     const consoleEl = document.getElementById('logConsole');
+    if (!consoleEl) return;
     const time = new Date().toLocaleTimeString();
     const logLine = document.createElement('div');
     logLine.className = `log-line ${type}`;
@@ -35,119 +28,135 @@ function addLog(text, type = 'info') {
     consoleEl.scrollTop = consoleEl.scrollHeight;
 }
 
-// Log Temizleme
+// Log Temizleme Butonu Aksiyonu
 document.getElementById('btnClearLogs').addEventListener('click', () => {
-    document.getElementById('logConsole').innerHTML = '<div class="log-line system">[SİSTEM] Konsol temizlendi.</div>';
+    document.getElementById('logConsole').innerHTML = '<div class="log-line system">[SİSTEM] Konsol geçmişi silindi.</div>';
 });
 
-// BUTON TIKLAMALARINI YAKALAMA (Ortak Tetikleyici)
-document.querySelectorAll('.btn-sorgula').forEach(button => {
-    button.addEventListener('click', async () => {
-        const apiType = button.getAttribute('data-api');
-        const parentBox = button.parentElement;
-        const resultsContainer = document.getElementById('results-container');
+// 3. DOĞRUDAN BUTON TETİKLEYİCİLERİ (Bug'lar Engellendi)
+document.getElementById('btn-aile').addEventListener('click', () => handleQuery('aile', document.getElementById('input-aile').value));
+document.getElementById('btn-ailepro').addEventListener('click', () => handleQuery('ailepro', document.getElementById('input-ailepro').value));
+document.getElementById('btn-sulale').addEventListener('click', () => handleQuery('sulale', document.getElementById('input-sulale').value));
+document.getElementById('btn-tcgsm').addEventListener('click', () => handleQuery('tcgsm', document.getElementById('input-tcgsm').value));
+document.getElementById('btn-eokul').addEventListener('click', () => handleQuery('eokul', document.getElementById('input-eokul').value));
+document.getElementById('btn-adres').addEventListener('click', () => handleQuery('adres', document.getElementById('input-adres').value));
+document.getElementById('btn-tapu').addEventListener('click', () => handleQuery('tapu', document.getElementById('input-tapu').value));
+document.getElementById('btn-tcpro').addEventListener('click', () => handleQuery('tcpro', document.getElementById('input-tcpro').value));
 
-        let finalUrl = "";
-        let logName = "";
+document.getElementById('btn-adaparsel').addEventListener('click', () => {
+    const il = document.getElementById('ilInput').value.trim();
+    const ilce = document.getElementById('ilceInput').value.trim();
+    if (!il || !ilce) {
+        addLog("HATA: Ada/Parsel için İl ve İlçe zorunludur!", "error");
+        alert("Lütfen İl ve İlçe alanlarını eksiksiz doldurun.");
+        return;
+    }
+    const targetUrl = `${BASE_URL}/adaparsel.php?il=${encodeURIComponent(il)}&ilce=${encodeURIComponent(ilce)}`;
+    executeFetch("Ada Parsel API", targetUrl);
+});
 
-        // 1. Durum: Ada Parsel Sorgulama (İl ve İlçe ister)
-        if (apiType === 'adaparsel') {
-            const il = document.getElementById('ilInput').value.trim();
-            const ilce = document.getElementById('ilceInput').value.trim();
-            if (!il || !ilce) {
-                addLog("HATA: İl ve İlçe alanları boş bırakılamaz!", "error");
-                alert("Lütfen İl ve İlçe alanlarını doldurun.");
-                return;
-            }
-            finalUrl = `${BASE_URL}/adaparsel.php?il=${encodeURIComponent(il)}&ilce=${encodeURIComponent(ilce)}`;
-            logName = `Ada Parsel (${il}/${ilce})`;
-        } 
-        // 2. Durum: Tüm Diğer TC Tabanlı Sorgulamalar
-        else {
-            const tcInput = parentBox.querySelector('.tc-input').value.trim();
-            if (tcInput.length !== 11 || isNaN(tcInput)) {
-                addLog(`HATA: Geçersiz TC Kimlik formatı girildi! (${tcInput})`, "error");
-                alert("Lütfen 11 haneli geçerli bir TC kimlik numarası girin.");
-                return;
-            }
-            
-            logName = apiType.toUpperCase() + " API";
-            // Seçilen türe göre tam linki eşittir'den sonra ekleyerek oluşturuyoruz
-            finalUrl = `${BASE_URL}/${apiType}.php?tc=${tcInput}`;
-        }
+// Ortak TC Veri Kontrolü ve Yönlendirici
+function handleQuery(apiName, value) {
+    const cleanValue = value.trim();
+    if (cleanValue.length !== 11 || isNaN(cleanValue)) {
+        addLog(`HATA: Giriş doğrulanamadı, 11 hane sayı olmalı! Girilen: "${cleanValue}"`, "error");
+        alert("Lütfen 11 haneli geçerli bir numara girin.");
+        return;
+    }
+    const targetUrl = `${BASE_URL}/${apiName}.php?tc=${cleanValue}`;
+    executeFetch(apiName.toUpperCase() + " API", targetUrl);
+}
 
-        // Arayüzde Yükleniyor Durumu Oluşturma
-        addLog(`Sorgu Başlatıldı -> Adrese bağlanılıyor: ${logName}`, "info");
-        resultsContainer.innerHTML = `
-            <div class="result-card">
-                <h2>${logName} Sorgulanıyor... <i class="fa-solid fa-spinner fa-spin" style="color:#3b82f6;"></i></h2>
-                <div class="api-link-box"><i class="fa-solid fa-link"></i> ${finalUrl}</div>
-                <p style="color:var(--text-muted); font-size:14px;">Sunucudan ham JSON verileri çözülüyor, lütfen bekleyin...</p>
-            </div>
+// 4. BAĞIMSIZ ASENKRON FETCH MOTORU (Kısıtlamasız Tüm Veriyi Çeker)
+async function executeFetch(displayName, fullUrl) {
+    const resultsContainer = document.getElementById('results-container');
+    
+    addLog(`SORGULANIYOR... -> Veri sunucusundan istek yapılıyor: ${displayName}`, "info");
+    
+    // Ekrana anlık "Sorgulanıyor..." kartını basıyoruz
+    resultsContainer.innerHTML = `
+        <div class="result-card searching">
+            <h2><i class="fa-solid fa-arrows-spin fa-spin"></i> ${displayName} - SORGULANIYOR...</h2>
+            <div class="api-link-box"><i class="fa-solid fa-link"></i> ${fullUrl}</div>
+            <p style="color:var(--accent-orange); font-size:14px; font-weight:bold; animation: pulse 1.5s infinite;">
+                Lütfen bekleyin, API adresindeki veriler toplanıyor ve listeleniyor...
+            </p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(fullUrl);
+        if (!response.ok) throw new Error(`Sunucu yanıt vermedi! HTTP Kod: ${response.status}`);
+        
+        const data = await response.json();
+        addLog(`BAŞARILI: ${displayName} sunucusundan gelen tüm veriler alındı.`, "success");
+
+        // Başarılı Kart Yapısı
+        let htmlOutput = `
+            <div class="result-card success">
+                <h2><i class="fa-solid fa-circle-check" style="color:#4ade80;"></i> ${displayName} Sonuçları</h2>
+                <div class="api-link-box"><i class="fa-solid fa-link"></i> ${fullUrl}</div>
+                <div class="data-grid">
         `;
 
-        // API İstek Motoru (Fetch)
-        try {
-            const response = await fetch(finalUrl);
-            if (!response.ok) throw new Error(`HTTP Hata! Kod: ${response.status}`);
-            
-            const data = await response.json();
-            addLog(`BAŞARILI: ${logName} verileri başarıyla ekrana indirildi.`, "success");
-
-            // Ekrana Verileri Basma
-            let contentHtml = `
-                <div class="result-card">
-                    <h2>${logName} Sonuçları <i class="fa-solid fa-circle-check" style="color:#4ade80;"></i></h2>
-                    <div class="api-link-box"><i class="fa-solid fa-link"></i> ${finalUrl}</div>
-                    <div class="data-grid">
-            `;
-
-            // Gelen veri nesne (Object) ise direkt bas
-            if (data && typeof data === 'object' && !Array.isArray(data)) {
-                for (const [key, value] of Object.entries(data)) {
-                    contentHtml += `
-                        <div class="data-item">
-                            <span class="label">${key}:</span>
-                            <span class="value">${value !== null && value !== undefined ? value : '-'}</span>
-                        </div>`;
+        // KISITLAMASIZ TÜM VERİLERİ DÖKME MOTORU (Recursive Object Explorer)
+        function renderAllData(obj) {
+            let chunk = "";
+            if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+                // Tekil obje ise içindeki her şeyi döngüyle bas
+                for (const [key, value] of Object.entries(obj)) {
+                    if (typeof value === 'object' && value !== null) {
+                        chunk += `<div style="grid-column: 1 / -1; color:#38bdf8; font-size:12px; margin-top:10px;">[${key.toUpperCase()}]</div>`;
+                        chunk += renderAllData(value); // İç içe veri varsa onu da açar kısıtlamaz
+                    } else {
+                        chunk += `
+                            <div class="data-item">
+                                <span class="label">${key}:</span>
+                                <span class="value">${value !== null && value !== undefined ? value : '-'}</span>
+                            </div>`;
+                    }
                 }
-            } 
-            // Gelen veri bir liste (Array) ise (Örn: Aile/Sülale listeleri) döngüyle bas
-            else if (Array.isArray(data)) {
-                if(data.length === 0) {
-                    contentHtml += `<p style="color:var(--text-muted); padding:10px;">Eşleşen kayıt bulunamadı.</p>`;
+            } else if (Array.isArray(obj)) {
+                // Eğer liste halinde veri geldiyse tamamını aç
+                if (obj.length === 0) {
+                    chunk += `<p style="color:var(--text-muted); padding:5px;">Veri listesi boş.</p>`;
                 } else {
-                    data.forEach((item, index) => {
-                        contentHtml += `<div style="grid-column: 1 / -1; color:#60a5fa; font-size:14px; font-weight:bold; margin-top:15px; border-left:3px solid #3b82f6; padding-left:10px;">Kayıt #${index + 1}</div>`;
-                        for (const [key, value] of Object.entries(item)) {
-                            contentHtml += `
+                    obj.forEach((item, index) => {
+                        chunk += `<div style="grid-column: 1 / -1; color:#60a5fa; font-size:13px; font-weight:bold; margin-top:15px; border-left:3px solid #3b82f6; padding-left:10px;">Kayıt #${index + 1}</div>`;
+                        if (typeof item === 'object') {
+                            chunk += renderAllData(item);
+                        } else {
+                            chunk += `
                                 <div class="data-item">
-                                    <span class="label">${key}:</span>
-                                    <span class="value">${value !== null && value !== undefined ? value : '-'}</span>
+                                    <span class="label">VERİ:</span>
+                                    <span class="value">${item}</span>
                                 </div>`;
                         }
                     });
                 }
             } else {
-                contentHtml += `<p style="color:var(--text-muted); padding:10px;">Dönen veri formatı tanımsız veya boş.</p>`;
+                chunk += `<p style="color:var(--text-muted);">Veri yok.</p>`;
             }
-
-            contentHtml += `</div></div>`;
-            resultsContainer.innerHTML = contentHtml;
-
-        } catch (error) {
-            addLog(`BAĞLANTI HATASI: ${logName} yüklenemedi! Nedeni: ${error.message}`, "error");
-            resultsContainer.innerHTML = `
-                <div class="result-card" style="border: 1px solid var(--accent-red);">
-                    <h2 style="color:var(--accent-red);">${logName} Hatası <i class="fa-solid fa-triangle-exclamation"></i></h2>
-                    <div class="api-link-box"><i class="fa-solid fa-link"></i> ${finalUrl}</div>
-                    <p style="color:#f87171; font-weight:bold; margin-bottom:10px;">Tarayıcı Güvenlik Engeli (CORS) veya Sunucu Çökmesi</p>
-                    <p style="color:var(--text-muted); font-size:13px; line-height:1.5;">
-                        Girdiğin link tarayıcı üzerinden doğrudan veri çekilmesine (CORS) izin vermiyor olabilir. 
-                        Ancak bu linki tarayıcının adres çubuğuna yapıştırdığında açılıyorsa, bu durum tamamen tarayıcının güvenlik korumasından kaynaklanır.
-                    </p>
-                </div>
-            `;
+            return chunk;
         }
-    });
-});
+
+        // Fonksiyonu çalıştırıp tüm veriyi grid içerisine aktarıyoruz
+        htmlOutput += renderAllData(data);
+        htmlOutput += `</div></div>`;
+        resultsContainer.innerHTML = htmlOutput;
+
+    } catch (error) {
+        addLog(`BAĞLANTI BAŞARISIZ: ${displayName} yüklenemedi! Hata açıklaması: ${error.message}`, "error");
+        resultsContainer.innerHTML = `
+            <div class="result-card" style="border: 1px solid var(--accent-red);">
+                <h2 style="color:var(--accent-red);"><i class="fa-solid fa-triangle-exclamation"></i> ${displayName} - Bağlantı Koptu</h2>
+                <div class="api-link-box"><i class="fa-solid fa-link"></i> ${fullUrl}</div>
+                <p style="color:#f87171; font-weight:bold; margin-bottom:8px;">Tarayıcı Güvenlik Kuralı (CORS Bloke) veya Hatalı İstek</p>
+                <p style="color:var(--text-muted); font-size:13px; line-height:1.5;">
+                    Bu link tarayıcı üzerinden doğrudan veri çekilmesine izin vermiyor (CORS engeli var). 
+                    Ancak linki kopyalayıp tarayıcı sekmene yapıştırdığında açılıyorsa, bu web sitesinin kodlarının çalıştığını ama tarayıcının güvenlik korumasına takıldığını gösterir.
+                </p>
+            </div>
+        `;
+    }
+}
