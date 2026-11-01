@@ -1,19 +1,22 @@
-```html
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Sorgu Paneli</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Sorgu Paneli</title>
     <style>
         :root {
-            --primary-color: #6366f1;
-            --bg-color: #0f172a;
-            --sidebar-color: #1e293b;
-            --text-color: #f8fafc;
-            --accent-color: #38bdf8;
-            --transition: all 0.3s ease;
+            --bg-color: #f4f6f9;
+            --sidebar-bg: #2c3e50;
+            --sidebar-text: #ecf0f1;
+            --active-tab: #3498db;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-color: #ddd;
+            --btn-primary: #3498db;
+            --btn-hover: #2980b9;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
         }
 
         * {
@@ -25,7 +28,6 @@
 
         body {
             background-color: var(--bg-color);
-            color: var(--text-color);
             display: flex;
             height: 100vh;
             overflow: hidden;
@@ -33,76 +35,80 @@
 
         /* Sidebar Styles */
         .sidebar {
-            width: 280px;
-            background-color: var(--sidebar-color);
+            width: 250px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
             display: flex;
             flex-direction: column;
-            border-right: 1px solid rgba(255,255,255,0.1);
-            transition: var(--transition);
+            padding-top: 20px;
+            flex-shrink: 0;
         }
 
-        .sidebar-header {
-            padding: 20px;
+        .sidebar h2 {
             text-align: center;
-            font-size: 1.2rem;
-            font-weight: bold;
-            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 1px;
         }
 
-        .nav-list {
-            list-style: none;
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-
-        .nav-item {
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--sidebar-text);
             padding: 15px 20px;
+            text-align: left;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            transition: var(--transition);
+            transition: all 0.3s ease;
+            font-size: 1rem;
             border-left: 4px solid transparent;
-            color: #94a3b8;
         }
 
-        .nav-item:hover {
-            background-color: rgba(99, 102, 241, 0.1);
-            color: white;
+        .tab-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
 
-        .nav-item.active {
-            background-color: rgba(99, 102, 241, 0.2);
-            color: white;
-            border-left: 4px solid var(--primary-color);
+        .tab-btn.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left-color: var(--active-tab);
+            font-weight: bold;
         }
 
-        /* Main Content Area */
+        /* Main Content Styles */
         .main-content {
             flex-grow: 1;
-            padding: 40px;
+            padding: 30px;
             overflow-y: auto;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: center;
+            align-items: flex-start;
         }
 
         .query-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
+            background-color: var(--card-bg);
             padding: 30px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 600px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: none; /* Hidden by default */
         }
 
-        h2 {
+        .query-card.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .query-card h3 {
             margin-bottom: 20px;
-            font-weight: 600;
-            text-align: center;
+            color: var(--text-color);
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
         }
 
         .input-group {
@@ -112,98 +118,311 @@
         .input-group label {
             display: block;
             margin-bottom: 8px;
-            color: #94a3b8;
-            font-size: 0.9rem;
+            font-weight: 500;
+            color: #555;
         }
 
         .input-group input {
             width: 100%;
-            padding: 12px 15px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            color: white;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
             font-size: 1rem;
             outline: none;
-            transition: border 0.3s;
+            transition: border-color 0.3s;
         }
 
         .input-group input:focus {
-            border-color: var(--primary-color);
+            border-color: var(--active-tab);
         }
 
-        .btn-submit {
+        .btn-query {
             width: 100%;
             padding: 12px;
-            background: var(--primary-color);
+            background-color: var(--btn-primary);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 5px;
             font-size: 1rem;
-            font-weight: bold;
             cursor: pointer;
-            transition: var(--transition);
+            transition: background-color 0.3s;
+            font-weight: bold;
         }
 
-        .btn-submit:hover {
-            background: #4f46e5;
-            transform: translateY(-2px);
+        .btn-query:hover {
+            background-color: var(--btn-hover);
         }
 
-        #result-area {
-            margin-top: 25px;
+        .btn-query:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Result Area */
+        .result-area {
+            margin-top: 20px;
             padding: 15px;
-            border-radius: 8px;
-            background: rgba(0,0,0,0.2);
-            display: none;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: 'Courier New', Courier, monospace;
-            border: 1px solid #334155;
-            color: var(--accent-color);
+            background-color: var(--bg-color);
+            border-radius: 5px;
+            min-height: 100px;
+            border: 1px solid var(--border-color);
+            word-break: break-word;
         }
 
-        .loader {
-            display: none;
-            text-align: center;
-            margin: 10px 0;
+        .result-area.loading {
+            color: #777;
+            font-style: italic;
+        }
+
+        .result-area.error {
+            color: var(--error-color);
+            border-color: var(--error-color);
+        }
+
+        .result-area.success {
+            color: var(--text-color);
+            border-color: var(--success-color);
+        }
+
+        pre {
+            text-align: left;
+            white-space: pre-wrap;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+                overflow: auto;
+            }
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+                padding-top: 0;
+            }
+            .sidebar h2 {
+                display: none;
+            }
+            .tab-btn {
+                padding: 15px;
+                white-space: nowrap;
+                border-left: none;
+                border-bottom: 4px solid transparent;
+            }
+            .tab-btn.active {
+                border-left: none;
+                border-bottom-color: var(--active-tab);
+            }
+            .main-content {
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
 
+    <!-- Sidebar -->
     <div class="sidebar">
-        <div class="sidebar-header">SORGUPANEL V2</div>
-        <ul class="nav-list">
-            <li class="nav-item active" data-api="https://apiv2.ajaxsystems.fun/tcpro.php">
-                <i class="fa-solid fa-id-card"></i> TC Pro Sorgu
-            </li>
-            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/adsoyad.php">
-                <i class="fa-solid fa-user"></i> Ad Soyad Sorgu
-            </li>
-            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/ailepro.php">
-                <i class="fa-solid fa-users"></i> Aile Pro Sorgu
-            </li>
-            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/sulale.php">
-                <i class="fa-solid fa-sitemap"></i> Sülale Sorgu
-            </li>
-            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/tcgsm.php">
-                <i class="fa-solid fa-mobile-screen"></i> TC'den GSM
-            </li>
-            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/gsmtc.php">
-                <i class="fa-solid fa-phone"></i> GSM'den TC
-            </li>
-            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/eokul.php">
-                <i class="fa-solid fa-graduation-cap"></i> E-Okul Sorgu
-            </li>
-            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/adres.php">
-                <i class="fa-solid fa-location-dot"></i> Adres Sorgu
-            </li>
-            <li class="nav-item" data-api="https://apiv2.ajaxsystems.fun/adaparsel.php">
-                <i class="fa-solid fa-map"></i> Ada Parsel Sorgu
-            </li>
-        </ul>
+        <h2>SORGU PANELİ</h2>
+        <button class="tab-btn active" onclick="openTab('tcpro')">TC Pro Sorgula</button>
+        <button class="tab-btn" onclick="openTab('adsoyad')">Ad Soyad Sorgula</button>
+        <button class="tab-btn" onclick="openTab('ailepro')">Aile Pro Sorgula</button>
+        <button class="tab-btn" onclick="openTab('sulale')">Sülale Sorgula</button>
+        <button class="tab-btn" onclick="openTab('tcgsm')">TC GSM Sorgula</button>
+        <button class="tab-btn" onclick="openTab('gsmtc')">GSM TC Sorgula</button>
+        <button class="tab-btn" onclick="openTab('eokul')">EO Okul Sorgula</button>
+        <button class="tab-btn" onclick="openTab('adres')">Adres Sorgula</button>
+        <button class="tab-btn" onclick="openTab('adaparsel')">Ada Parsel Sorgula</button>
     </div>
 
+    <!-- Main Content -->
     <div class="main-content">
-        <div class="query
+
+        <!-- TC Pro -->
+        <div id="tcpro" class="query-card active">
+            <h3>TC Kimlik Numarası Sorgula</h3>
+            <div class="input-group">
+                <label for="tc_input_tcpro">TC Kimlik No (11 Hane)</label>
+                <input type="text" id="tc_input_tcpro" placeholder="11 haneli TC giriniz" maxlength="11" pattern="\d*">
+            </div>
+            <button class="btn-query" onclick="fetchData('tcpro', 'tc', 'tc_input_tcpro')">Sorgula</button>
+            <div class="result-area" id="result_tcpro"></div>
+        </div>
+
+        <!-- Ad Soyad -->
+        <div id="adsoyad" class="query-card">
+            <h3>Ad Soyad Sorgula</h3>
+            <div class="input-group">
+                <label for="name_input_adsoyad">Ad</label>
+                <input type="text" id="name_input_adsoyad" placeholder="Adınızı giriniz">
+            </div>
+            <div class="input-group">
+                <label for="surname_input_adsoyad">Soyad</label>
+                <input type="text" id="surname_input_adsoyad" placeholder="Soyadınızı giriniz">
+            </div>
+            <button class="btn-query" onclick="fetchData('adsoyad', null, null, true)">Sorgula</button>
+            <div class="result-area" id="result_adsoyad"></div>
+        </div>
+
+        <!-- Aile Pro -->
+        <div id="ailepro" class="query-card">
+            <h3>Aile Pro Sorgula</h3>
+            <div class="input-group">
+                <label for="tc_input_ailepro">TC Kimlik No (11 Hane)</label>
+                <input type="text" id="tc_input_ailepro" placeholder="11 haneli TC giriniz" maxlength="11" pattern="\d*">
+            </div>
+            <button class="btn-query" onclick="fetchData('ailepro', 'tc', 'tc_input_ailepro')">Sorgula</button>
+            <div class="result-area" id="result_ailepro"></div>
+        </div>
+
+        <!-- Sülale -->
+        <div id="sulale" class="query-card">
+            <h3>Sülale Sorgula</h3>
+            <div class="input-group">
+                <label for="tc_input_sulale">TC Kimlik No (11 Hane)</label>
+                <input type="text" id="tc_input_sulale" placeholder="11 haneli TC giriniz" maxlength="11" pattern="\d*">
+            </div>
+            <button class="btn-query" onclick="fetchData('sulale', 'tc', 'tc_input_sulale')">Sorgula</button>
+            <div class="result-area" id="result_sulale"></div>
+        </div>
+
+        <!-- TC GSM -->
+        <div id="tcgsm" class="query-card">
+            <h3>TC'den GSM Çek</h3>
+            <div class="input-group">
+                <label for="tc_input_tcgsm">TC Kimlik No (11 Hane)</label>
+                <input type="text" id="tc_input_tcgsm" placeholder="11 haneli TC giriniz" maxlength="11" pattern="\d*">
+            </div>
+            <button class="btn-query" onclick="fetchData('tcgsm', 'tc', 'tc_input_tcgsm')">Sorgula</button>
+            <div class="result-area" id="result_tcgsm"></div>
+        </div>
+
+        <!-- GSM TC -->
+        <div id="gsmtc" class="query-card">
+            <h3>GSM'den TC Çek</h3>
+            <div class="input-group">
+                <label for="gsm_input_gsmtc">GSM Numarası</label>
+                <input type="text" id="gsm_input_gsmtc" placeholder="05XX XXX XX XX" maxlength="11">
+            </div>
+            <button class="btn-query" onclick="fetchData('gsmtc', 'gsm', 'gsm_input_gsmtc')">Sorgula</button>
+            <div class="result-area" id="result_gsmtc"></div>
+        </div>
+
+        <!-- EO Okul -->
+        <div id="eokul" class="query-card">
+            <h3>EO Okul Sorgula</h3>
+            <div class="input-group">
+                <label for="tc_input_eokul">TC Kimlik No (11 Hane)</label>
+                <input type="text" id="tc_input_eokul" placeholder="11 haneli TC giriniz" maxlength="11" pattern="\d*">
+            </div>
+            <button class="btn-query" onclick="fetchData('eokul', 'tc', 'tc_input_eokul')">Sorgula</button>
+            <div class="result-area" id="result_eokul"></div>
+        </div>
+
+        <!-- Adres -->
+        <div id="adres" class="query-card">
+            <h3>Adres Sorgula</h3>
+            <div class="input-group">
+                <label for="tc_input_adres">TC Kimlik No (11 Hane)</label>
+                <input type="text" id="tc_input_adres" placeholder="11 haneli TC giriniz" maxlength="11" pattern="\d*">
+            </div>
+            <button class="btn-query" onclick="fetchData('adres', 'tc', 'tc_input_adres')">Sorgula</button>
+            <div class="result-area" id="result_adres"></div>
+        </div>
+
+        <!-- Ada Parsel -->
+        <div id="adaparsel" class="query-card">
+            <h3>Ada Parsel Sorgula</h3>
+            <div class="input-group">
+                <label for="address_input_adaparsel">Adres / Lokasyon Bilgisi</label>
+                <input type="text" id="address_input_adaparsel" placeholder="Örn: Kadıköy, İstanbul veya Mahalle adı">
+            </div>
+            <button class="btn-query" onclick="fetchData('adaparsel', 'address', 'address_input_adaparsel')">Sorgula</button>
+            <div class="result-area" id="result_adaparsel"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // Tab Switching Logic
+        function openTab(tabName) {
+            // Hide all cards
+            const cards = document.querySelectorAll('.query-card');
+            cards.forEach(card => card.classList.remove('active'));
+
+            // Deactivate all buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected card and activate button
+            document.getElementById(tabName).classList.add('active');
+            
+            // Find the button that called this function and add active class
+            const clickedBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabName));
+            if(clickedBtn) clickedBtn.classList.add('active');
+        }
+
+        // Fetch Data Logic
+        async function fetchData(apiName, paramType, inputId, isMultiParam = false) {
+            const resultDiv = document.getElementById(`result_${apiName}`);
+            let url = `https://apiv2.ajaxsystems.fun/${apiName}.php`;
+            let params = new URLSearchParams();
+
+            // Handle Loading State
+            resultDiv.className = 'result-area loading';
+            resultDiv.textContent = 'Sorgulanıyor...';
+            
+            try {
+                if (isMultiParam && apiName === 'adsoyad') {
+                    const name = document.getElementById('name_input_adsoyad').value.trim();
+                    const surname = document.getElementById('surname_input_adsoyad').value.trim();
+                    if (!name || !surname) {
+                        throw new Error("Lütfen Ad ve Soyad alanlarını doldurun.");
+                    }
+                    params.append('name', name);
+                    params.append('surname', surname);
+                } else if (paramType === 'tc') {
+                    const value = document.getElementById(inputId).value.trim();
+                    if (!value) {
+                        throw new Error("Lütfen TC Kimlik No giriniz.");
+                    }
+                    params.append('tc', value);
+                } else if (paramType === 'gsm') {
+                    const value = document.getElementById(inputId).value.trim();
+                    if (!value) {
+                        throw new Error("Lütfen GSM numarasını giriniz.");
+                    }
+                    params.append('gsm', value);
+                } else if (paramType === 'address') {
+                    const value = document.getElementById(inputId).value.trim();
+                    if (!value) {
+                        throw new Error("Lütfen adres bilgisi giriniz.");
+                    }
+                    params.append('address', value);
+                }
+
+                // Construct full URL
+                const finalUrl = `${url}?${params.toString()}`;
+
+                // Fetch
+                const response = await fetch(finalUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP Hatası: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Display Result
+                resultDiv.className = 'result-area success';
+                resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+
+            } catch (error) {
+                resultDiv.className = 'result-area error';
+                resultDiv.textContent = `Hata: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
