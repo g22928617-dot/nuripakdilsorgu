@@ -1,510 +1,145 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
-<title>Sorgu Paneli</title>
-<style>
-:root{
-  --bg:#f3f5f7; --panel:#ffffff; --side:#14202b; --side-text:#c9d4de; --side-active:#1f3a4d;
-  --text:#18212a; --muted:#667584; --line:#dfe5ea; --accent:#0e7c86; --accent-text:#fff;
-  --danger:#c23b3b; --ok:#2f8f5b; --radius:8px;
-}
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg:#0f161d; --panel:#17212b; --side:#0b1218; --side-text:#a9b8c5; --side-active:#183241;
-    --text:#e6edf3; --muted:#8a9bab; --line:#26333f; --accent:#2bb3bf; --accent-text:#06161a;
-    --danger:#e26a6a; --ok:#5cc48a;
-  }
-}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0}
-body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
-button,input,select{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-
-.app{display:flex;height:100%}
-.side{width:260px;background:var(--side);color:var(--side-text);display:flex;flex-direction:column;flex-shrink:0}
-.brand{padding:18px 18px 14px;font-weight:700;font-size:17px;color:#fff;border-bottom:1px solid rgba(255,255,255,.08)}
-.tabs{flex:1;overflow-y:auto;padding:10px}
-.tabs-empty{padding:12px;font-size:13px;opacity:.7}
-.tab{display:flex;align-items:center;gap:6px;border-radius:var(--radius);padding:10px 12px;color:var(--side-text);cursor:pointer;margin-bottom:2px}
-.tab:hover{background:rgba(255,255,255,.06)}
-.tab.active{background:var(--side-active);color:#fff}
-.tab .tname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tab .tact{display:none;gap:4px}
-body.admin .tab .tact{display:flex}
-.mini{background:rgba(255,255,255,.1);border:0;border-radius:5px;color:#fff;width:24px;height:24px;cursor:pointer;font-size:12px;line-height:1}
-.mini:hover{background:rgba(255,255,255,.22)}
-.mini.del:hover{background:var(--danger)}
-.side-foot{padding:12px;border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:8px}
-.side-foot .who{font-size:13px;opacity:.8}
-
-.btn{background:var(--accent);color:var(--accent-text);border:0;border-radius:var(--radius);padding:9px 16px;cursor:pointer;font-weight:600}
-.btn:hover{filter:brightness(1.08)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn.ghost{background:transparent;color:inherit;border:1px solid var(--line)}
-.side .btn.ghost{border-color:rgba(255,255,255,.25);color:#fff}
-.btn.small{padding:5px 11px;font-size:13px}
-.admin-only{display:none}
-body.admin .admin-only{display:block}
-
-.main{flex:1;overflow-y:auto;padding:28px;min-width:0}
-.wrap{max-width:900px;margin:0 auto}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px}
-h1{font-size:22px;margin:0 0 4px}
-.sub{color:var(--muted);margin:0 0 16px}
-.qrow{display:flex;gap:10px;flex-wrap:wrap}
-.qrow input{flex:1;min-width:200px}
-input[type=text],input[type=password],select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px}
-label{display:block;font-weight:600;margin:12px 0 5px;font-size:14px}
-.hint{color:var(--muted);font-size:13px;margin-top:4px}
-
-.status{margin:0 0 12px;font-size:14px;color:var(--muted)}
-.status.err{color:var(--danger)}
-.status.ok{color:var(--ok)}
-.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-.toolbar select{width:auto}
-.records{display:flex;flex-direction:column;gap:10px}
-.rec{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
-.rec .rn{background:var(--bg);color:var(--muted);font-size:12.5px;padding:5px 12px;border-bottom:1px solid var(--line)}
-.rec table{width:100%;border-collapse:collapse}
-.rec td{padding:7px 12px;border-bottom:1px solid var(--line);vertical-align:top;word-break:break-word}
-.rec tr:last-child td{border-bottom:0}
-.rec td.k{width:34%;color:var(--muted);font-weight:600}
-.rec .line{padding:9px 12px;white-space:pre-wrap;word-break:break-word}
-.pager{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:18px}
-.pager button{min-width:38px;padding:7px 11px;border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);cursor:pointer}
-.pager button:hover{border-color:var(--accent)}
-.pager button.cur{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
-.pager button:disabled{opacity:.4;cursor:default}
-.pager .dots{padding:7px 4px;color:var(--muted)}
-.pinfo{text-align:center;color:var(--muted);font-size:13px;margin-top:8px}
-.empty{text-align:center;color:var(--muted);padding:40px 10px}
-
-dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);padding:0;width:min(480px,92vw)}
-dialog::backdrop{background:rgba(0,0,0,.5)}
-.dlg{padding:22px}
-.dlg h2{margin:0 0 6px;font-size:18px}
-.dlg .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
-.err-text{color:var(--danger);font-size:13px;min-height:18px;margin-top:6px}
-
-@media (max-width:760px){
-  .app{flex-direction:column}
-  .side{width:100%;max-height:44vh}
-  .main{padding:16px}
-  .rec td.k{width:40%}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelişmiş Sorgu & Yönetim Paneli</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar ve efektler */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1e1e2e; }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 3px; }
+        .tab-active { background-color: #2563eb; color: white; border-radius: 0.375rem; }
+    </style>
 </head>
-<body>
+<body class="bg-[#111827] text-gray-100 min-h-screen flex flex-col font-sans">
 
-<div class="app">
-  <aside class="side">
-    <div class="brand">Sorgu Paneli</div>
-    <div class="tabs" id="tabs"></div>
-    <div class="side-foot">
-      <button class="btn small admin-only" id="addTabBtn">+ Yeni sorgu sekmesi</button>
-      <div class="who" id="who">Üye modu: sadece sorgulama</div>
-      <button class="btn ghost small" id="loginBtn">Yönetici girişi</button>
-    </div>
-  </aside>
-  <main class="main">
-    <div class="wrap" id="view"></div>
-  </main>
-</div>
+    <!-- HEADER -->
+    <header class="bg-[#1f2937] border-b border-gray-700 px-6 py-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-terminal text-blue-500 text-2xl"></i>
+            <h1 class="text-xl font-bold tracking-wider text-white">Sorgu Panel <span class="text-blue-400 text-xs font-normal">v2.1</span></h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span id="roleBadge" class="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1">
+                <i class="fa-solid fa-user"></i> <span id="roleText">Normal Üye</span>
+            </span>
+            <button id="authBtn" onclick="toggleAuthModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition duration-200 flex items-center gap-2">
+                <i class="fa-solid fa-lock"></i> <span id="authBtnText">Yönetici Girişi</span>
+            </button>
+        </div>
+    </header>
 
-<dialog id="loginDlg">
-  <form class="dlg" id="loginForm">
-    <h2>Yönetici girişi</h2>
-    <label for="adminPass">Şifre</label>
-    <input type="password" id="adminPass" autocomplete="current-password">
-    <div class="err-text" id="loginErr"></div>
-    <div class="acts">
-      <button type="button" class="btn ghost" data-close="loginDlg">Vazgeç</button>
-      <button type="submit" class="btn" id="loginSubmit">Giriş yap</button>
-    </div>
-  </form>
-</dialog>
+    <!-- MAIN CONTAINER -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-64 bg-[#1f2937] border-r border-gray-700 flex flex-col justify-between hidden md:flex">
+            <div class="p-4 space-y-6 overflow-y-auto max-h-[calc(100vh-160px)]">
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">Sabit Sorgular</p>
+                    <nav class="space-y-1" id="fixedTabs">
+                        <button onclick="switchTab('ad-soyad')" id="tab-ad-soyad" class="tab-active w-full text-left px-3 py-2.5 text-sm font-medium flex items-center gap-3 transition">
+                            <i class="fa-solid fa-id-card text-blue-400"></i> Ad Soyad Sorgu
+                        </button>
+                        <button onclick="switchTab('numara')" id="tab-numara" class="w-full text-left text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2.5 text-sm font-medium flex items-center gap-3 rounded transition">
+                            <i class="fa-solid fa-phone text-green-400"></i> Numara Sorgu
+                        </button>
+                    </nav>
+                </div>
 
-<dialog id="tabDlg">
-  <form class="dlg" id="tabForm">
-    <h2 id="tabDlgTitle">Yeni sorgu sekmesi</h2>
-    <label for="fName">Sekme adı</label>
-    <input type="text" id="fName" maxlength="60" placeholder="Örn: Plaka Sorgu" required>
-    <label for="fType">Sorgulanacak veri türü</label>
-    <input type="text" id="fType" maxlength="60" placeholder="Örn: Plaka, TC No, Telefon" required>
-    <div class="hint">Arama kutusunda bu isim gösterilir.</div>
-    <label for="fApi">API adresi</label>
-    <input type="text" id="fApi" maxlength="1000" placeholder="https://site.com/api?tc={q}" required>
-    <div class="hint">Sorgu değerinin geleceği yere <b>{q}</b> yaz. {q} yoksa adresin sonuna <b>?q=değer</b> eklenir. Bu adres üyelere gösterilmez.</div>
-    <div class="err-text" id="tabErr"></div>
-    <div class="acts">
-      <button type="button" class="btn ghost" data-close="tabDlg">Vazgeç</button>
-      <button type="submit" class="btn" id="tabSubmit">Kaydet</button>
-    </div>
-  </form>
-</dialog>
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">Yöneticinin Ekledikleri</p>
+                    <nav class="space-y-1" id="dynamicTabs">
+                        <span id="noDynamicTabsText" class="text-xs text-gray-500 italic px-2 block">Henüz ek sorgu bulunmuyor.</span>
+                    </nav>
+                </div>
 
-<script>
-(() => {
-  "use strict";
-  const TOKEN_KEY = "sp_token";
-  let tabs = [], activeId = null, editingId = null, loadError = "";
-  let token = "";
-  try { token = sessionStorage.getItem(TOKEN_KEY) || ""; } catch (e) {}
-  let pageSize = 10;
-  const results = {};
-  const $ = s => document.querySelector(s);
-  const isAdmin = () => !!token;
+                <div id="adminControlsArea" class="hidden border-t border-gray-700 pt-4">
+                    <p class="text-xs font-semibold text-red-400 uppercase tracking-wider mb-3 px-2">Yönetim Araçları</p>
+                    <button onclick="switchTab('admin-panel')" id="tab-admin-panel" class="w-full text-left text-gray-300 hover:bg-red-950/40 border border-transparent hover:border-red-900 px-3 py-2.5 text-sm font-medium flex items-center gap-3 rounded transition">
+                        <i class="fa-solid fa-gear text-red-400"></i> API / Sekme Yönetimi
+                    </button>
+                </div>
+            </div>
 
-  function setToken(t) {
-    token = t;
-    try { t ? sessionStorage.setItem(TOKEN_KEY, t) : sessionStorage.removeItem(TOKEN_KEY); } catch (e) {}
-  }
+            <!-- AI Widget -->
+            <div class="p-4 border-t border-gray-700 bg-[#1a222f]" id="aiSidebarWidget">
+                <div class="text-xs text-gray-400 mb-1 flex items-center gap-1">
+                    <i class="fa-solid fa-brain text-purple-400"></i> <span>Gemini AI Entegre</span>
+                </div>
+                <p class="text-xs text-gray-500 leading-relaxed mb-2">Yöneticiler sorgu sonuçlarını analiz edebilir.</p>
+                <button onclick="openAiModal()" id="sidebarAiBtn" disabled class="w-full bg-purple-900/40 text-purple-300 border border-purple-800 text-xs py-1.5 rounded text-center opacity-50 cursor-not-allowed font-medium transition">
+                    Yapay Zekayı Aç
+                </button>
+            </div>
+        </aside>
 
-  /* ---------- Sunucu isteği ---------- */
-  async function api(path, opts = {}) {
-    const { method = "GET", body, auth = false } = opts;
-    const headers = {};
-    if (body) headers["content-type"] = "application/json";
-    if (auth && token) headers.authorization = "Bearer " + token;
-    let r;
-    try {
-      r = await fetch("/api/" + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
-    } catch (e) {
-      throw new Error("Sunucuya ulaşılamadı.");
-    }
-    let data = {};
-    try { data = await r.json(); } catch (e) {}
-    if (r.status === 401 && auth) {
-      setToken(""); applyAdmin(); loadTabs();
-      throw new Error("Oturum süresi doldu, tekrar giriş yap.");
-    }
-    if (!r.ok) throw new Error(data.error || ("Hata " + r.status));
-    return data;
-  }
+        <!-- CONTENT AREA -->
+        <main class="flex-1 p-6 overflow-y-auto space-y-6">
+            <div id="tabContents">
+                
+                <!-- 1. Ad Soyad Sekmesi -->
+                <div id="content-ad-soyad" class="tab-panel">
+                    <div class="bg-[#1f2937] p-6 rounded-lg border border-gray-700 shadow-md">
+                        <h2 class="text-xl font-bold mb-4 text-white flex items-center gap-2">
+                            <i class="fa-solid fa-id-card text-blue-500"></i> Ad Soyad ile Bilgi Sorgulama
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-1">Ad Soyad</label>
+                                <input type="text" id="input-adsoyad-name" placeholder="Örn: Ahmet Yılmaz" class="w-full bg-[#111827] border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-1">İl (Şehir)</label>
+                                <input type="text" id="input-adsoyad-il" placeholder="Örn: İstanbul" class="w-full bg-[#111827] border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                            </div>
+                        </div>
+                        <button onclick="runAdSoyadQuery()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded transition shadow-lg flex items-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass"></i> Sorgula
+                        </button>
+                    </div>
+                </div>
 
-  async function loadTabs() {
-    try {
-      tabs = await api(isAdmin() ? "admin/tabs" : "tabs", { auth: isAdmin() });
-      loadError = "";
-    } catch (e) {
-      tabs = []; loadError = e.message;
-    }
-    if (!tabs.some(t => t.id === activeId)) activeId = tabs.length ? tabs[0].id : null;
-    renderTabs(); renderView();
-  }
+                <!-- 2. Numara Sekmesi -->
+                <div id="content-numara" class="tab-panel hidden">
+                    <div class="bg-[#1f2937] p-6 rounded-lg border border-gray-700 shadow-md">
+                        <h2 class="text-xl font-bold mb-4 text-white flex items-center gap-2">
+                            <i class="fa-solid fa-phone text-green-500"></i> Numara ile Veri Sorgulama
+                        </h2>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Telefon Numarası / Veri No</label>
+                            <input type="text" id="input-numara-val" placeholder="Örn: 05551234567 veya ID girin" class="w-full bg-[#111827] border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-green-500">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-400 mb-1">API Endpoint URL'si</label>
+                            <input type="text" id="input-numara-api" placeholder="Sorgulanacak tam API URL'si girin (Değer sonuna eklenecektir veya {value} yazın)" class="w-full bg-[#111827] border border-gray-600 rounded px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-green-500">
+                        </div>
+                        <button onclick="runNumaraQuery()" class="bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2.5 rounded transition shadow-lg flex items-center gap-2">
+                            <i class="fa-solid fa-bolt"></i> API'den Çek ve Sorgula
+                        </button>
+                    </div>
+                </div>
 
-  /* ---------- Yönetici durumu ---------- */
-  function applyAdmin() {
-    document.body.classList.toggle("admin", isAdmin());
-    $("#loginBtn").textContent = isAdmin() ? "Çıkış yap" : "Yönetici girişi";
-    $("#who").textContent = isAdmin()
-      ? "Yönetici modu: sekme ve API düzenleyebilirsin"
-      : "Üye modu: sadece sorgulama";
-  }
+                <!-- Dinamik Sekme Yükleyicisi -->
+                <div id="content-dynamic-placeholder" class="tab-panel hidden">
+                    <div class="bg-[#1f2937] p-6 rounded-lg border border-gray-700 shadow-md">
+                        <h2 id="dynamic-title" class="text-xl font-bold mb-4 text-white flex items-center gap-2"></h2>
+                        <div class="mb-4">
+                            <label id="dynamic-label" class="block text-sm font-medium text-gray-400 mb-1">Sorgu Parametresi</label>
+                            <input type="text" id="input-dynamic-val" placeholder="Giriş yapın..." class="w-full bg-[#111827] border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-purple-500">
+                        </div>
+                        <button onclick="runDynamicQuery()" class="bg-purple-600 hover:bg-purple-700 text-white font-medium px-5 py-2.5 rounded transition shadow-lg flex items-center gap-2">
+                            <i class="fa-solid fa-server"></i> Özel API Sorgusu Yap
+                        </button>
+                    </div>
+                </div>
 
-  /* ---------- Sekmeler ---------- */
-  function renderTabs() {
-    const box = $("#tabs");
-    box.innerHTML = "";
-    tabs.forEach(t => {
-      const b = document.createElement("div");
-      b.className = "tab" + (t.id === activeId ? " active" : "");
-      b.setAttribute("role", "button");
-      b.tabIndex = 0;
-      const n = document.createElement("span");
-      n.className = "tname"; n.textContent = t.name;
-      b.appendChild(n);
-      const act = document.createElement("span");
-      act.className = "tact";
-      const e = document.createElement("button");
-      e.className = "mini"; e.title = "Düzenle"; e.textContent = "✎";
-      e.onclick = ev => { ev.stopPropagation(); openTabDlg(t.id); };
-      const d = document.createElement("button");
-      d.className = "mini del"; d.title = "Sil"; d.textContent = "✕";
-      d.onclick = ev => { ev.stopPropagation(); delTab(t.id); };
-      act.append(e, d);
-      b.appendChild(act);
-      const go = () => { activeId = t.id; renderTabs(); renderView(); };
-      b.onclick = go;
-      b.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); go(); } };
-      box.appendChild(b);
-    });
-    if (!tabs.length) {
-      const p = document.createElement("div");
-      p.className = "tabs-empty";
-      p.textContent = "Henüz sekme yok.";
-      box.appendChild(p);
-    }
-  }
-
-  async function delTab(id) {
-    const t = tabs.find(x => x.id === id);
-    if (!t || !confirm("“" + t.name + "” sekmesi silinsin mi?")) return;
-    try {
-      await api("admin/tabs/" + encodeURIComponent(id), { method: "DELETE", auth: true });
-      delete results[id];
-      if (activeId === id) activeId = null;
-      await loadTabs();
-    } catch (e) { alert(e.message); }
-  }
-
-  /* ---------- Ana görünüm ---------- */
-  function renderView() {
-    const v = $("#view");
-    v.innerHTML = "";
-    const t = tabs.find(x => x.id === activeId);
-    if (!t) {
-      const c = document.createElement("div");
-      c.className = "card empty";
-      c.textContent = loadError
-        ? loadError
-        : (isAdmin()
-            ? "Soldaki “Yeni sorgu sekmesi” ile ilk sekmeni ekle."
-            : "Şu an sorgulanabilir bir sekme yok.");
-      v.appendChild(c);
-      return;
-    }
-    const r = results[t.id] || {};
-    const card = document.createElement("div");
-    card.className = "card";
-    const h = document.createElement("h1"); h.textContent = t.name;
-    const s = document.createElement("p"); s.className = "sub";
-    s.textContent = t.type + " ile sorgula";
-    const row = document.createElement("div"); row.className = "qrow";
-    const inp = document.createElement("input");
-    inp.type = "text"; inp.placeholder = t.type + " gir";
-    inp.maxLength = 200; inp.autocomplete = "off";
-    inp.value = r.query || "";
-    const btn = document.createElement("button");
-    btn.className = "btn"; btn.id = "qBtn"; btn.textContent = "Sorgula";
-    row.append(inp, btn);
-    card.append(h, s, row);
-    v.appendChild(card);
-    const out = document.createElement("div");
-    out.id = "out";
-    v.appendChild(out);
-
-    const run = () => query(t, inp.value.trim());
-    btn.onclick = run;
-    inp.onkeydown = e => { if (e.key === "Enter") run(); };
-    renderResult(t.id);
-    inp.focus();
-  }
-
-  /* ---------- Sorgu ---------- */
-  async function query(t, q) {
-    if (!q) {
-      results[t.id] = { query: q, records: [], page: 1, status: "Önce bir " + t.type + " gir.", cls: "err" };
-      renderResult(t.id);
-      return;
-    }
-    results[t.id] = { query: q, records: [], page: 1, status: "Sorgulanıyor…", cls: "" };
-    const btn = $("#qBtn");
-    if (btn) { btn.disabled = true; btn.textContent = "Sorgulanıyor…"; }
-    renderResult(t.id);
-    try {
-      const d = await api("query", { method: "POST", body: { id: t.id, q } });
-      let data;
-      try { data = JSON.parse(d.body); } catch (e) { data = d.body; }
-      const recs = toRecords(data);
-      results[t.id].records = recs;
-      results[t.id].status = recs.length ? (recs.length + " kayıt bulundu.") : "Sonuç boş döndü.";
-      results[t.id].cls = recs.length ? "ok" : "";
-    } catch (err) {
-      results[t.id].status = err.message;
-      results[t.id].cls = "err";
-    }
-    const b2 = $("#qBtn");
-    if (b2) { b2.disabled = false; b2.textContent = "Sorgula"; }
-    renderResult(t.id);
-  }
-
-  function toRecords(data) {
-    if (data === null || data === undefined) return [];
-    if (Array.isArray(data)) return data;
-    if (typeof data === "object") {
-      const keys = Object.keys(data);
-      const arrKeys = keys.filter(k => Array.isArray(data[k]));
-      if (arrKeys.length === 1 && keys.length <= 4) return data[arrKeys[0]];
-      return keys.length ? [data] : [];
-    }
-    return String(data).replace(/\r/g, "").split("\n").map(l => l.trim()).filter(Boolean);
-  }
-
-  /* ---------- Sonuç + sayfalama ---------- */
-  function renderResult(id) {
-    const out = $("#out");
-    if (!out || id !== activeId) return;
-    const r = results[id];
-    out.innerHTML = "";
-    if (!r) return;
-
-    if (r.status) {
-      const st = document.createElement("p");
-      st.className = "status " + (r.cls || "");
-      st.textContent = r.status;
-      out.appendChild(st);
-    }
-    const recs = r.records || [];
-    if (!recs.length) return;
-
-    const total = recs.length;
-    const pages = Math.max(1, Math.ceil(total / pageSize));
-    if (r.page > pages) r.page = pages;
-    const start = (r.page - 1) * pageSize;
-    const slice = recs.slice(start, start + pageSize);
-
-    const tb = document.createElement("div"); tb.className = "toolbar";
-    const info = document.createElement("span");
-    info.className = "hint";
-    info.textContent = (start + 1) + "–" + (start + slice.length) + " / " + total + " kayıt";
-    const right = document.createElement("div");
-    const lab = document.createElement("span"); lab.className = "hint"; lab.textContent = "Sayfa başına: ";
-    const sel = document.createElement("select");
-    [5, 10, 20, 50, 100].forEach(n => {
-      const o = document.createElement("option");
-      o.value = n; o.textContent = n;
-      if (n === pageSize) o.selected = true;
-      sel.appendChild(o);
-    });
-    sel.onchange = () => { pageSize = +sel.value; r.page = 1; renderResult(id); };
-    right.append(lab, sel);
-    tb.append(info, right);
-    out.appendChild(tb);
-
-    const list = document.createElement("div"); list.className = "records";
-    slice.forEach((item, i) => {
-      const rec = document.createElement("div"); rec.className = "rec";
-      if (item && typeof item === "object") {
-        const rn = document.createElement("div"); rn.className = "rn";
-        rn.textContent = "Kayıt " + (start + i + 1);
-        rec.appendChild(rn);
-        const table = document.createElement("table");
-        const entries = Array.isArray(item) ? item.map((x, j) => [String(j + 1), x]) : Object.entries(item);
-        entries.forEach(([k, val]) => {
-          const tr = document.createElement("tr");
-          const td1 = document.createElement("td"); td1.className = "k"; td1.textContent = k;
-          const td2 = document.createElement("td");
-          td2.textContent = (val !== null && typeof val === "object") ? JSON.stringify(val) : String(val);
-          tr.append(td1, td2);
-          table.appendChild(tr);
-        });
-        rec.appendChild(table);
-      } else {
-        const ln = document.createElement("div"); ln.className = "line";
-        ln.textContent = String(item);
-        rec.appendChild(ln);
-      }
-      list.appendChild(rec);
-    });
-    out.appendChild(list);
-
-    if (pages > 1) {
-      const pg = document.createElement("div"); pg.className = "pager";
-      const mk = (label, p, o = {}) => {
-        const b = document.createElement("button");
-        b.textContent = label;
-        if (o.cur) b.classList.add("cur");
-        if (o.dis) b.disabled = true;
-        else b.onclick = () => { r.page = p; renderResult(id); $(".main").scrollTop = 0; };
-        pg.appendChild(b);
-      };
-      mk("‹ Önceki", r.page - 1, { dis: r.page === 1 });
-      pageList(r.page, pages).forEach(p => {
-        if (p === "…") {
-          const d = document.createElement("span"); d.className = "dots"; d.textContent = "…";
-          pg.appendChild(d);
-        } else mk(String(p), p, { cur: p === r.page });
-      });
-      mk("Sonraki ›", r.page + 1, { dis: r.page === pages });
-      out.appendChild(pg);
-      const pi = document.createElement("div"); pi.className = "pinfo";
-      pi.textContent = r.page + ". sayfa / " + pages;
-      out.appendChild(pi);
-    }
-  }
-
-  function pageList(cur, total) {
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-    const arr = [...new Set([1, total, cur - 1, cur, cur + 1])]
-      .filter(p => p >= 1 && p <= total).sort((a, b) => a - b);
-    const out = [];
-    arr.forEach((p, i) => { if (i && p - arr[i - 1] > 1) out.push("…"); out.push(p); });
-    return out;
-  }
-
-  /* ---------- Diyaloglar ---------- */
-  document.querySelectorAll("[data-close]").forEach(b => {
-    b.addEventListener("click", () => document.getElementById(b.dataset.close).close());
-  });
-
-  $("#loginBtn").onclick = () => {
-    if (isAdmin()) {
-      setToken(""); applyAdmin(); loadTabs();
-    } else {
-      $("#adminPass").value = ""; $("#loginErr").textContent = "";
-      $("#loginDlg").showModal();
-      $("#adminPass").focus();
-    }
-  };
-
-  $("#loginForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    const btn = $("#loginSubmit");
-    btn.disabled = true; $("#loginErr").textContent = "";
-    try {
-      const d = await api("login", { method: "POST", body: { password: $("#adminPass").value } });
-      setToken(d.token);
-      $("#adminPass").value = "";
-      $("#loginDlg").close();
-      applyAdmin();
-      await loadTabs();
-    } catch (err) {
-      $("#loginErr").textContent = err.message;
-    } finally { btn.disabled = false; }
-  });
-
-  function openTabDlg(id) {
-    editingId = id || null;
-    const t = tabs.find(x => x.id === id);
-    $("#tabDlgTitle").textContent = t ? "Sekmeyi düzenle" : "Yeni sorgu sekmesi";
-    $("#fName").value = t ? t.name : "";
-    $("#fType").value = t ? t.type : "";
-    $("#fApi").value = t ? (t.api || "") : "";
-    $("#tabErr").textContent = "";
-    $("#tabDlg").showModal();
-    $("#fName").focus();
-  }
-  $("#addTabBtn").onclick = () => openTabDlg(null);
-
-  $("#tabForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    if (!isAdmin()) return;
-    const body = {
-      name: $("#fName").value.trim(),
-      type: $("#fType").value.trim(),
-      api: $("#fApi").value.trim()
-    };
-    if (editingId) body.id = editingId;
-    const btn = $("#tabSubmit");
-    btn.disabled = true; $("#tabErr").textContent = "";
-    try {
-      const d = await api("admin/tabs", { method: "POST", body, auth: true });
-      activeId = d.id;
-      $("#tabDlg").close();
-      await loadTabs();
-    } catch (err) {
-      $("#tabErr").textContent = err.message;
-    } finally { btn.disabled = false; }
-  });
-
-  applyAdmin();
-  loadTabs();
-})();
-</script>
-</body>
-</html>
+                <!-- 3. Yönetici Paneli Sekmesi -->
+                <div id="content-admin-panel" class="tab-panel hidden">
+                    <div class="bg-[#1f2937] p-6 rounded-lg border border-red-900 shadow-md space-y-6">
+                        
+                        <!-- Gemini API Key Ayarı (Yeni Güvenlik Çözümü) -->
