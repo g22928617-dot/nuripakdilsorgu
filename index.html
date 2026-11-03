@@ -1,193 +1,184 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#090d18">
-  <title>DataCore | Veri Platformu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataCore | Sorgulama Paneli</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
+  <section id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <div class="logo">DC</div>
+      <h1>DataCore</h1>
+      <p class="muted">Sorgulama ve veri yönetim platformu</p>
 
-<div id="auth-screen" class="auth-screen">
-  <div class="auth-card">
-    <div class="brand-icon">D</div>
-    <h1>DataCore</h1>
-    <p class="muted">Güvenli Veri Sorgulama Platformu</p>
+      <div class="auth-tabs">
+        <button id="loginTab" class="active" type="button">Giriş Yap</button>
+        <button id="registerTab" type="button">Kayıt Ol</button>
+      </div>
 
-    <div class="auth-tabs">
-      <button class="auth-tab active" data-tab="login">Giriş Yap</button>
-      <button class="auth-tab" data-tab="register">Kayıt Ol</button>
+      <form id="authForm">
+        <label for="nickname">Kullanıcı adı</label>
+        <input id="nickname" maxlength="24" required autocomplete="username"
+               placeholder="Kullanıcı adınız">
+
+        <label for="password">Şifre</label>
+        <input id="password" type="password" minlength="8" required
+               autocomplete="current-password" placeholder="Şifreniz">
+
+        <button id="authSubmit" class="primary full" type="submit">Giriş Yap</button>
+      </form>
+
+      <p id="authMessage" class="message"></p>
     </div>
+  </section>
 
-    <form id="auth-form">
-      <label>Kullanıcı adı</label>
-      <input id="nickname" required minlength="3" maxlength="30"
-        autocomplete="username" placeholder="Kullanıcı adınız">
+  <section id="appScreen" class="app-screen hidden">
+    <aside class="sidebar">
+      <div class="brand"><span>DC</span> DataCore</div>
 
-      <label>Parola</label>
-      <input id="password" required type="password" minlength="8"
-        autocomplete="current-password" placeholder="Parolanız">
+      <div class="nav-label">MENÜ</div>
+      <button class="nav-item active" data-page="dashboard">Genel Bakış</button>
+      <button class="nav-item" data-page="query">Sorgulama</button>
+      <button class="nav-item hidden" id="adminNav" data-page="admin">Yönetim Paneli</button>
+      <button class="nav-item hidden" id="aiNav" data-page="assistant">AI Asistan</button>
 
-      <button class="primary-button full" id="auth-submit">
-        Giriş Yap
-      </button>
-    </form>
-    <p id="auth-message" class="message"></p>
-    <small class="muted">DataCore Güvenli Erişim Sistemi</small>
-  </div>
-</div>
+      <div class="sidebar-bottom">
+        <div id="userLabel" class="user-label"></div>
+        <button id="logoutBtn" class="logout">Oturumu Kapat</button>
+      </div>
+    </aside>
 
-<div id="main-screen" class="hidden">
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-icon small">D</div>
-      <strong>DataCore</strong>
-    </div>
-
-    <span class="sidebar-label">ANA MENÜ</span>
-    <button class="nav-item active" data-page="dashboard">⌂ Genel Bakış</button>
-    <button class="nav-item" data-page="queries">⌕ Sorgulama</button>
-    <button class="nav-item hidden" id="admin-nav" data-page="admin">⚙ Yönetim Paneli</button>
-    <button class="nav-item hidden" id="ai-nav" data-page="assistant">✦ Gemini Asistan</button>
-
-    <div class="sidebar-bottom">
-      <div class="user-info">
-        <div class="user-avatar">D</div>
+    <main class="main">
+      <header class="topbar">
         <div>
-          <strong id="sidebar-username">Kullanıcı</strong>
-          <small id="sidebar-role">Kullanıcı</small>
+          <h2 id="pageTitle">Genel Bakış</h2>
+          <p class="muted">DataCore yönetim ve sorgulama sistemi</p>
         </div>
-      </div>
-      <button id="logout-button" class="logout-button">Oturumu Kapat</button>
-    </div>
-  </aside>
+        <span id="roleBadge" class="role-badge">Kullanıcı</span>
+      </header>
 
-  <main class="content">
-    <header class="topbar">
-      <div>
-        <h2 id="page-title">Genel Bakış</h2>
-        <p id="page-description">Platform yönetimi ve sorgulama merkezi.</p>
-      </div>
-      <span class="system-status">● Sistem Aktif</span>
-    </header>
-
-    <section id="dashboard-page" class="page">
-      <div class="welcome-card">
-        <span class="eyebrow">DATACORE PLATFORM</span>
-        <h1>Veri sorgulama merkezi</h1>
-        <p>Yetkilendirilmiş veri kaynaklarında sorgulama işlemlerinizi gerçekleştirin.</p>
-        <button class="primary-button" data-go="queries">Sorgulamaya Başla</button>
-      </div>
-
-      <h3>Platform Bilgileri</h3>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span>Aktif Kategoriler</span>
-          <strong id="category-count">0</strong>
-        </div>
-        <div class="stat-card">
-          <span>Hesap Türü</span>
-          <strong id="account-type">Kullanıcı</strong>
-        </div>
-      </div>
-    </section>
-
-    <section id="queries-page" class="page hidden">
-      <h3>Sorgulama Kategorileri</h3>
-      <div id="category-list" class="category-grid"></div>
-
-      <div id="query-workspace" class="panel hidden">
-        <span class="eyebrow">AKTİF KATEGORİ</span>
-        <h2 id="selected-category"></h2>
-        <form id="query-form">
-          <label id="query-label">Sorgulama değeri</label>
-          <input id="query-value" required maxlength="500"
-            placeholder="Sorgulanacak değeri girin">
-          <button class="primary-button" type="submit">Sorgula</button>
-        </form>
-        <p id="query-message" class="message"></p>
-
-        <div id="results-container" class="hidden">
-          <div class="results-header">
-            <h3>Sorgulama Sonuçları</h3>
-            <span id="result-count"></span>
-          </div>
-          <pre id="results-content" class="result-data"></pre>
-          <div id="pagination" class="pagination"></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="admin-page" class="page hidden">
-      <h3>Yönetim Paneli</h3>
-      <div class="panel">
-        <h3>Yeni Sorgulama Kategorisi</h3>
-        <form id="category-form">
-          <label>Kategori adı</label>
-          <input id="new-category-name" required maxlength="60"
-            placeholder="Örn. Genel Veri">
-
-          <label>API adresi</label>
-          <input id="new-category-url" required type="url"
-            placeholder="https://api.example.com/search">
-
-          <label>Sorgu parametresi</label>
-          <input id="new-category-param" required value="query"
-            placeholder="query">
-
-          <label>JSON sonuç yolu</label>
-          <input id="new-category-results" value=""
-            placeholder="Örn. data.results">
-
-          <label>Sayfa parametresi</label>
-          <input id="new-category-page" value="page"
-            placeholder="page">
-
-          <label>İstek yöntemi</label>
-          <select id="new-category-method">
-            <option value="GET">GET</option>
-            <option value="POST">POST</option>
-          </select>
-
-          <button class="primary-button" type="submit">Kategori Oluştur</button>
-        </form>
-        <p id="admin-message" class="message"></p>
-      </div>
-
-      <div class="panel">
-        <h3>Mevcut Kategoriler</h3>
-        <div id="admin-category-list"></div>
-      </div>
-    </section>
-
-    <section id="assistant-page" class="page hidden">
-      <h3>Gemini Yönetici Asistanı</h3>
-      <div class="panel ai-panel">
-        <div class="ai-heading">
-          <div class="ai-icon">✦</div>
+      <section id="dashboardPage" class="page">
+        <div class="welcome-card">
           <div>
-            <strong>DataCore AI</strong>
-            <small>Yönetici destek asistanı</small>
+            <p class="eyebrow">DATACORE PLATFORM</p>
+            <h1>Hoş geldiniz.</h1>
+            <p class="muted">Sistemdeki sorgulama kategorilerine buradan ulaşabilirsiniz.</p>
           </div>
+          <div class="welcome-icon">⌕</div>
         </div>
-        <div id="ai-messages" class="ai-messages">
-          <div class="ai-message">
-            Merhaba. API yapılandırmaları ve yönetim işlemleri hakkında yardımcı olabilirim.
-          </div>
-        </div>
-        <form id="ai-form" class="ai-form">
-          <input id="ai-input" required maxlength="2000"
-            placeholder="Mesajınızı yazın...">
-          <button class="primary-button">Gönder</button>
-        </form>
-      </div>
-    </section>
-  </main>
-</div>
 
-<script src="app.js"></script>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span>Aktif kategoriler</span>
+            <strong id="categoryCount">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>Hesap türü</span>
+            <strong id="accountType">Kullanıcı</strong>
+          </div>
+        </div>
+
+        <h3>Sorgulama kategorileri</h3>
+        <div id="dashboardCategories" class="category-grid"></div>
+      </section>
+
+      <section id="queryPage" class="page hidden">
+        <div class="panel">
+          <h3>Yeni sorgulama</h3>
+          <p class="muted">Sorgulama yapmak istediğiniz kategoriyi seçin.</p>
+
+          <form id="queryForm">
+            <label for="categorySelect">Kategori</label>
+            <select id="categorySelect" required>
+              <option value="">Kategori seçin</option>
+            </select>
+
+            <label for="queryValue">Sorgu değeri</label>
+            <input id="queryValue" required maxlength="300"
+                   placeholder="Sorgulanacak değeri girin">
+
+            <button class="primary" type="submit">Sorgula</button>
+          </form>
+
+          <p id="queryMessage" class="message"></p>
+        </div>
+
+        <div id="resultPanel" class="panel hidden">
+          <div class="result-header">
+            <div>
+              <h3>Sorgu sonucu</h3>
+              <p id="pageInfo" class="muted"></p>
+            </div>
+            <div class="pagination">
+              <button id="prevPage" type="button">Önceki</button>
+              <button id="nextPage" type="button">Sonraki</button>
+            </div>
+          </div>
+          <pre id="resultOutput"></pre>
+        </div>
+      </section>
+
+      <section id="adminPage" class="page hidden">
+        <div class="panel">
+          <h3>Yeni kategori oluştur</h3>
+          <p class="muted">API bilgilerini girerek yeni bir sorgulama kategorisi ekleyin.</p>
+
+          <form id="categoryForm">
+            <label for="categoryName">Kategori adı</label>
+            <input id="categoryName" required maxlength="60" placeholder="Örnek: Örnek Sorgulama">
+
+            <label for="apiUrl">API adresi</label>
+            <input id="apiUrl" type="url" required placeholder="https://api.example.com/search">
+
+            <label for="apiMethod">İstek yöntemi</label>
+            <select id="apiMethod">
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+            </select>
+
+            <label for="queryParam">Sorgu parametresi</label>
+            <input id="queryParam" required maxlength="80" value="query"
+                   placeholder="Örnek: query">
+
+            <label for="pageParam">Sayfa parametresi</label>
+            <input id="pageParam" maxlength="80" value="page"
+                   placeholder="Örnek: page">
+
+            <label for="resultsPath">Sonuçların JSON yolu</label>
+            <input id="resultsPath" maxlength="200" placeholder="Örnek: data.results">
+
+            <label for="totalPagesPath">Toplam sayfa sayısının JSON yolu</label>
+            <input id="totalPagesPath" maxlength="200" placeholder="Örnek: data.total_pages">
+
+            <button class="primary" type="submit">Kategoriyi Kaydet</button>
+          </form>
+          <p id="categoryMessage" class="message"></p>
+        </div>
+
+        <div class="panel">
+          <h3>Mevcut kategoriler</h3>
+          <div id="adminCategories"></div>
+        </div>
+      </section>
+
+      <section id="assistantPage" class="page hidden">
+        <div class="panel">
+          <h3>Gemini Yönetici Asistanı</h3>
+          <p class="muted">Yönetim ve API yapılandırması hakkında soru sorabilirsiniz.</p>
+          <div id="chatMessages" class="chat-messages"></div>
+          <form id="aiForm" class="chat-form">
+            <input id="aiInput" maxlength="2000" required
+                   placeholder="Mesajınızı yazın...">
+            <button class="primary" type="submit">Gönder</button>
+          </form>
+          <p id="aiMessage" class="message"></p>
+        </div>
+      </section>
+    </main>
+  </section>
 </body>
 </html>
