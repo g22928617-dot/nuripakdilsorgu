@@ -1,145 +1,385 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gelişmiş Sorgu & Yönetim Paneli</title>
-    <link rel="stylesheet" href="https://cloudflare.com">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://tailwindcss.com"></script>
-    <style>
-        /* Custom scrollbar ve efektler */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #1e1e2e; }
-        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 3px; }
-        .tab-active { background-color: #2563eb; color: white; border-radius: 0.375rem; }
-    </style>
+    <meta name="theme-color" content="#090d18">
+    <meta name="description" content="Güvenli sorgulama ve veri yönetim platformu.">
+
+    <title>DataCore | Sorgulama Platformu</title>
+
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#111827] text-gray-100 min-h-screen flex flex-col font-sans">
 
-    <!-- HEADER -->
-    <header class="bg-[#1f2937] border-b border-gray-700 px-6 py-4 flex justify-between items-center shadow-lg">
-        <div class="flex items-center space-x-3">
-            <i class="fa-solid fa-terminal text-blue-500 text-2xl"></i>
-            <h1 class="text-xl font-bold tracking-wider text-white">Sorgu Panel <span class="text-blue-400 text-xs font-normal">v2.1</span></h1>
-        </div>
-        <div class="flex items-center space-x-4">
-            <span id="roleBadge" class="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1">
-                <i class="fa-solid fa-user"></i> <span id="roleText">Normal Üye</span>
-            </span>
-            <button id="authBtn" onclick="toggleAuthModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition duration-200 flex items-center gap-2">
-                <i class="fa-solid fa-lock"></i> <span id="authBtnText">Yönetici Girişi</span>
-            </button>
-        </div>
-    </header>
+<body>
 
-    <!-- MAIN CONTAINER -->
-    <div class="flex flex-1 overflow-hidden">
-        
-        <!-- SIDEBAR -->
-        <aside class="w-64 bg-[#1f2937] border-r border-gray-700 flex flex-col justify-between hidden md:flex">
-            <div class="p-4 space-y-6 overflow-y-auto max-h-[calc(100vh-160px)]">
-                <div>
-                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">Sabit Sorgular</p>
-                    <nav class="space-y-1" id="fixedTabs">
-                        <button onclick="switchTab('ad-soyad')" id="tab-ad-soyad" class="tab-active w-full text-left px-3 py-2.5 text-sm font-medium flex items-center gap-3 transition">
-                            <i class="fa-solid fa-id-card text-blue-400"></i> Ad Soyad Sorgu
-                        </button>
-                        <button onclick="switchTab('numara')" id="tab-numara" class="w-full text-left text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2.5 text-sm font-medium flex items-center gap-3 rounded transition">
-                            <i class="fa-solid fa-phone text-green-400"></i> Numara Sorgu
-                        </button>
-                    </nav>
-                </div>
+    <div id="app">
 
-                <div>
-                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">Yöneticinin Ekledikleri</p>
-                    <nav class="space-y-1" id="dynamicTabs">
-                        <span id="noDynamicTabsText" class="text-xs text-gray-500 italic px-2 block">Henüz ek sorgu bulunmuyor.</span>
-                    </nav>
-                </div>
+        <!-- GİRİŞ EKRANI -->
+        <section id="auth-screen" class="auth-screen">
 
-                <div id="adminControlsArea" class="hidden border-t border-gray-700 pt-4">
-                    <p class="text-xs font-semibold text-red-400 uppercase tracking-wider mb-3 px-2">Yönetim Araçları</p>
-                    <button onclick="switchTab('admin-panel')" id="tab-admin-panel" class="w-full text-left text-gray-300 hover:bg-red-950/40 border border-transparent hover:border-red-900 px-3 py-2.5 text-sm font-medium flex items-center gap-3 rounded transition">
-                        <i class="fa-solid fa-gear text-red-400"></i> API / Sekme Yönetimi
+            <div class="auth-card">
+
+                <div class="brand-icon">D</div>
+
+                <h1>DataCore</h1>
+
+                <p class="subtitle">
+                    Güvenli Veri Sorgulama Platformu
+                </p>
+
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login">
+                        Giriş Yap
+                    </button>
+
+                    <button class="auth-tab" data-tab="register">
+                        Kayıt Ol
+                    </button>
+
+                    <button class="auth-tab" data-tab="admin">
+                        Yönetici
                     </button>
                 </div>
+
+                <form id="auth-form">
+
+                    <div id="nickname-group" class="form-group">
+                        <label for="nickname">Kullanıcı Adı</label>
+                        <input
+                            id="nickname"
+                            type="text"
+                            placeholder="Kullanıcı adınızı girin"
+                            autocomplete="username"
+                            maxlength="30"
+                        >
+                    </div>
+
+                    <div id="password-group" class="form-group">
+                        <label for="password">Parola</label>
+                        <input
+                            id="password"
+                            type="password"
+                            placeholder="Parolanızı girin"
+                            autocomplete="current-password"
+                        >
+                    </div>
+
+                    <button type="submit" class="primary-button">
+                        Devam Et
+                    </button>
+
+                </form>
+
+                <div id="auth-message" class="message"></div>
+
+                <p class="auth-footer">
+                    DataCore Güvenli Erişim Sistemi
+                </p>
+
             </div>
 
-            <!-- AI Widget -->
-            <div class="p-4 border-t border-gray-700 bg-[#1a222f]" id="aiSidebarWidget">
-                <div class="text-xs text-gray-400 mb-1 flex items-center gap-1">
-                    <i class="fa-solid fa-brain text-purple-400"></i> <span>Gemini AI Entegre</span>
-                </div>
-                <p class="text-xs text-gray-500 leading-relaxed mb-2">Yöneticiler sorgu sonuçlarını analiz edebilir.</p>
-                <button onclick="openAiModal()" id="sidebarAiBtn" disabled class="w-full bg-purple-900/40 text-purple-300 border border-purple-800 text-xs py-1.5 rounded text-center opacity-50 cursor-not-allowed font-medium transition">
-                    Yapay Zekayı Aç
-                </button>
-            </div>
-        </aside>
+        </section>
 
-        <!-- CONTENT AREA -->
-        <main class="flex-1 p-6 overflow-y-auto space-y-6">
-            <div id="tabContents">
-                
-                <!-- 1. Ad Soyad Sekmesi -->
-                <div id="content-ad-soyad" class="tab-panel">
-                    <div class="bg-[#1f2937] p-6 rounded-lg border border-gray-700 shadow-md">
-                        <h2 class="text-xl font-bold mb-4 text-white flex items-center gap-2">
-                            <i class="fa-solid fa-id-card text-blue-500"></i> Ad Soyad ile Bilgi Sorgulama
-                        </h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+
+        <!-- ANA UYGULAMA -->
+        <section id="main-screen" class="main-screen hidden">
+
+            <aside class="sidebar">
+
+                <div class="sidebar-brand">
+                    <div class="brand-icon small">D</div>
+                    <span>DataCore</span>
+                </div>
+
+                <div class="sidebar-section">
+                    <span class="sidebar-label">ANA MENÜ</span>
+
+                    <button class="nav-item active" data-page="dashboard">
+                        <span>⌂</span>
+                        Genel Bakış
+                    </button>
+
+                    <button class="nav-item" data-page="queries">
+                        <span>⌕</span>
+                        Sorgulama
+                    </button>
+
+                    <button class="nav-item hidden" id="admin-nav" data-page="admin">
+                        <span>⚙</span>
+                        Yönetim Paneli
+                    </button>
+
+                    <button class="nav-item hidden" id="ai-nav" data-page="assistant">
+                        <span>✦</span>
+                        Gemini Asistan
+                    </button>
+                </div>
+
+                <div class="sidebar-bottom">
+
+                    <div class="user-info">
+                        <div class="user-avatar">U</div>
+
+                        <div>
+                            <strong id="sidebar-username">Kullanıcı</strong>
+                            <small id="sidebar-role">Kullanıcı</small>
+                        </div>
+                    </div>
+
+                    <button id="logout-button" class="logout-button">
+                        Oturumu Kapat
+                    </button>
+
+                </div>
+
+            </aside>
+
+
+            <main class="content">
+
+                <header class="topbar">
+
+                    <div>
+                        <h2 id="page-title">Genel Bakış</h2>
+                        <p id="page-description">
+                            Sorgulama platformuna hoş geldiniz.
+                        </p>
+                    </div>
+
+                    <div class="topbar-status">
+                        <span class="status-dot"></span>
+                        Sistem Aktif
+                    </div>
+
+                </header>
+
+
+                <!-- DASHBOARD -->
+                <section id="dashboard-page" class="page">
+
+                    <div class="welcome-card">
+                        <div>
+                            <span class="eyebrow">DATACORE PLATFORM</span>
+
+                            <h1>Veri sorgulama merkezi</h1>
+
+                            <p>
+                                Platformdaki mevcut sorgulama kategorilerini
+                                kullanarak veri işlemlerinizi gerçekleştirin.
+                            </p>
+
+                            <button class="primary-button dashboard-action"
+                                data-target="queries">
+                                Sorgulamaya Başla
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="section-heading">
+                        <h3>Platform Bilgileri</h3>
+                    </div>
+
+                    <div class="stats-grid">
+
+                        <div class="stat-card">
+                            <span>Mevcut Kategoriler</span>
+                            <strong id="category-count">0</strong>
+                        </div>
+
+                        <div class="stat-card">
+                            <span>Aktif Oturum</span>
+                            <strong>1</strong>
+                        </div>
+
+                        <div class="stat-card">
+                            <span>Hesap Türü</span>
+                            <strong id="account-type">Kullanıcı</strong>
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- QUERY PAGE -->
+                <section id="queries-page" class="page hidden">
+
+                    <div class="section-heading">
+                        <h3>Sorgulama Merkezi</h3>
+                    </div>
+
+                    <div id="category-list" class="category-list">
+                        <p class="empty-state">
+                            Henüz bir sorgulama kategorisi oluşturulmadı.
+                        </p>
+                    </div>
+
+                    <div id="query-workspace" class="query-workspace hidden">
+
+                        <div class="workspace-header">
                             <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-1">Ad Soyad</label>
-                                <input type="text" id="input-adsoyad-name" placeholder="Örn: Ahmet Yılmaz" class="w-full bg-[#111827] border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                                <span class="eyebrow">AKTİF KATEGORİ</span>
+                                <h3 id="selected-category">Sorgulama</h3>
                             </div>
+                        </div>
+
+                        <form id="query-form">
+
+                            <div id="query-fields"></div>
+
+                            <button type="submit" class="primary-button">
+                                Sorgula
+                            </button>
+
+                        </form>
+
+                        <div id="query-message" class="message"></div>
+
+                        <div id="results-container" class="results-container hidden">
+
+                            <div class="results-header">
+                                <h3>Sorgulama Sonuçları</h3>
+                                <span id="result-count"></span>
+                            </div>
+
+                            <div id="results-content"></div>
+
+                            <div id="pagination" class="pagination"></div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ADMIN PAGE -->
+                <section id="admin-page" class="page hidden">
+
+                    <div class="section-heading">
+                        <h3>Yönetim Paneli</h3>
+                    </div>
+
+                    <div class="admin-card">
+
+                        <h3>Yeni Sorgulama Kategorisi</h3>
+
+                        <p>
+                            Yeni kategori ve API yapılandırmalarını buradan
+                            oluşturabilirsiniz.
+                        </p>
+
+                        <form id="category-form">
+
+                            <div class="form-group">
+                                <label>Kategori Adı</label>
+                                <input id="new-category-name"
+                                    placeholder="Örn. Genel Sorgulama"
+                                    required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>API Adresi</label>
+                                <input id="new-category-url"
+                                    type="url"
+                                    placeholder="https://api.example.com/search"
+                                    required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Sorgu Parametresi</label>
+                                <input id="new-category-param"
+                                    placeholder="query"
+                                    required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Sonuçların bulunduğu JSON alanı</label>
+                                <input id="new-category-results"
+                                    placeholder="results">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Sayfa parametresi</label>
+                                <input id="new-category-page"
+                                    placeholder="page">
+                            </div>
+
+                            <div class="form-group">
+                                <label>API yöntemi</label>
+                                <select id="new-category-method">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                </select>
+                            </div>
+
+                            <button class="primary-button" type="submit">
+                                Kategori Oluştur
+                            </button>
+
+                        </form>
+
+                        <div id="admin-message" class="message"></div>
+
+                    </div>
+
+                    <div class="admin-card">
+                        <h3>Mevcut Kategoriler</h3>
+                        <div id="admin-category-list"></div>
+                    </div>
+
+                </section>
+
+
+                <!-- AI PAGE -->
+                <section id="assistant-page" class="page hidden">
+
+                    <div class="section-heading">
+                        <h3>Gemini Yönetici Asistanı</h3>
+                    </div>
+
+                    <div class="ai-card">
+
+                        <div class="ai-heading">
+                            <div class="ai-icon">✦</div>
+
                             <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-1">İl (Şehir)</label>
-                                <input type="text" id="input-adsoyad-il" placeholder="Örn: İstanbul" class="w-full bg-[#111827] border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                                <strong>DataCore AI</strong>
+                                <small>Yönetici Destek Asistanı</small>
                             </div>
                         </div>
-                        <button onclick="runAdSoyadQuery()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded transition shadow-lg flex items-center gap-2">
-                            <i class="fa-solid fa-magnifying-glass"></i> Sorgula
-                        </button>
-                    </div>
-                </div>
 
-                <!-- 2. Numara Sekmesi -->
-                <div id="content-numara" class="tab-panel hidden">
-                    <div class="bg-[#1f2937] p-6 rounded-lg border border-gray-700 shadow-md">
-                        <h2 class="text-xl font-bold mb-4 text-white flex items-center gap-2">
-                            <i class="fa-solid fa-phone text-green-500"></i> Numara ile Veri Sorgulama
-                        </h2>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Telefon Numarası / Veri No</label>
-                            <input type="text" id="input-numara-val" placeholder="Örn: 05551234567 veya ID girin" class="w-full bg-[#111827] border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-green-500">
+                        <div id="ai-messages" class="ai-messages">
+                            <div class="ai-message">
+                                Merhaba. Yönetim paneli, API yapılandırmaları
+                                ve sistem kullanımı hakkında yardımcı olabilirim.
+                            </div>
                         </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-400 mb-1">API Endpoint URL'si</label>
-                            <input type="text" id="input-numara-api" placeholder="Sorgulanacak tam API URL'si girin (Değer sonuna eklenecektir veya {value} yazın)" class="w-full bg-[#111827] border border-gray-600 rounded px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-green-500">
-                        </div>
-                        <button onclick="runNumaraQuery()" class="bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2.5 rounded transition shadow-lg flex items-center gap-2">
-                            <i class="fa-solid fa-bolt"></i> API'den Çek ve Sorgula
-                        </button>
-                    </div>
-                </div>
 
-                <!-- Dinamik Sekme Yükleyicisi -->
-                <div id="content-dynamic-placeholder" class="tab-panel hidden">
-                    <div class="bg-[#1f2937] p-6 rounded-lg border border-gray-700 shadow-md">
-                        <h2 id="dynamic-title" class="text-xl font-bold mb-4 text-white flex items-center gap-2"></h2>
-                        <div class="mb-4">
-                            <label id="dynamic-label" class="block text-sm font-medium text-gray-400 mb-1">Sorgu Parametresi</label>
-                            <input type="text" id="input-dynamic-val" placeholder="Giriş yapın..." class="w-full bg-[#111827] border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-purple-500">
-                        </div>
-                        <button onclick="runDynamicQuery()" class="bg-purple-600 hover:bg-purple-700 text-white font-medium px-5 py-2.5 rounded transition shadow-lg flex items-center gap-2">
-                            <i class="fa-solid fa-server"></i> Özel API Sorgusu Yap
-                        </button>
-                    </div>
-                </div>
+                        <form id="ai-form" class="ai-form">
+                            <input
+                                id="ai-input"
+                                placeholder="Asistana mesajınızı yazın..."
+                                autocomplete="off"
+                                required
+                            >
 
-                <!-- 3. Yönetici Paneli Sekmesi -->
-                <div id="content-admin-panel" class="tab-panel hidden">
-                    <div class="bg-[#1f2937] p-6 rounded-lg border border-red-900 shadow-md space-y-6">
-                        
-                        <!-- Gemini API Key Ayarı (Yeni Güvenlik Çözümü) -->
+                            <button type="submit">Gönder</button>
+                        </form>
+
+                    </div>
+
+                </section>
+
+            </main>
+
+        </section>
+
+    </div>
+
+    <script src="app.js"></script>
+
+</body>
+</html>
