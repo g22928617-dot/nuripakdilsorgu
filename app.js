@@ -1,6 +1,5 @@
-
-const SUPABASE_URL = "https://ytnohesfcvlgqavxpcui.supabase.co/rest/v1/";
-const SUPABASE_ANON_KEY = "sb_publishable_2SJUQszXzzZIJEWoAR54PA_OPEctTP9";
+const SUPABASE_URL = "https://ytnohesfcvlgqavxpcui.supabase.co";
+const SUPABASE_ANON_KEY = "SUPABASE_PUBLISHABLE_KEY_BURAYA";
 
 const supabase = window.supabase.createClient(
   SUPABASE_URL,
@@ -9,156 +8,85 @@ const supabase = window.supabase.createClient(
 
 let currentUser = null;
 let currentProfile = null;
-let authMode = "login";
 let categories = [];
-let selectedCategory = null;
 let currentPage = 1;
 let totalPages = 1;
+let currentQuery = "";
+let currentCategoryId = null;
+let authMode = "login";
 
 const $ = (id) => document.getElementById(id);
 
-function message(id, text, error = false) {
+function message(id, text, isError = false) {
   const element = $(id);
   element.textContent = text;
-  element.style.color = error ? "#ff7777" : "#70d6a0";
+  element.style.color = isError ? "#ff8295" : "#9eafff";
 }
 
-function safeNickname(value) {
-  return value.trim().toLowerCase();
+function nicknameToEmail(nickname) {
+  return `${nickname.toLowerCase()}@accounts.datacore.example`;
 }
 
-function emailFromNickname(nickname) {
-  return safeNickname(nickname) + "@accounts.datacore.example";
-}
-
-async function getToken() {
-  const { data } = await supabase.auth.getSession();
-  return data.session?.access_token || null;
-}
-
-function isAdmin() {
-  return currentProfile?.role === "admin";
+function validNickname(value) {
+  return /^[a-zA-Z0-9._-]{3,24}$/.test(value);
 }
 
 function showAuth() {
-  $("auth-screen").classList.remove("hidden");
-  $("main-screen").classList.add("hidden");
+  $("authScreen").classList.remove("hidden");
+  $("appScreen").classList.add("hidden");
 }
 
-function showMain() {
-  $("auth-screen").classList.add("hidden");
-  $("main-screen").classList.remove("hidden");
+function showApp() {
+  $("authScreen").classList.add("hidden");
+  $("appScreen").classList.remove("hidden");
 }
 
-function setPage(page) {
-  if (page === "admin" || page === "assistant") {
-    if (!isAdmin()) return;
-  }
-
-  document.querySelectorAll(".page").forEach(el => {
-    el.classList.add("hidden");
-  });
-
-  document.querySelectorAll(".nav-item").forEach(el => {
-    el.classList.remove("active");
-  });
-
-  $(page + "-page").classList.remove("hidden");
-
-  document.querySelector(`[data-page="${page}"]`)
-    ?.classList.add("active");
-
-  const titles = {
-    dashboard: ["Genel Bakış", "Platform genel durumu."],
-    queries: ["Sorgulama Merkezi", "Veri kaynaklarında sorgulama yapın."],
-    admin: ["Yönetim Paneli", "Kategorileri ve API yapılandırmalarını yönetin."],
-    assistant: ["Gemini Asistan", "Yönetici destek merkezi."]
-  };
-
-  $("page-title").textContent = titles[page][0];
-  $("page-description").textContent = titles[page][1];
+function setAuthMode(mode) {
+  authMode = mode;
+  $("loginTab").classList.toggle("active", mode === "login");
+  $("registerTab").classList.toggle("active", mode === "register");
+  $("authSubmit").textContent = mode === "login" ? "Giriş Yap" : "Kayıt Ol";
+  $("password").autocomplete = mode === "login" ? "current-password" : "new-password";
+  message("authMessage", "");
 }
 
-document.querySelectorAll(".nav-item").forEach(button => {
-  button.addEventListener("click", () => {
-    setPage(button.dataset.page);
-  });
-});
+$("loginTab").addEventListener("click", () => setAuthMode("login"));
+$("registerTab").addEventListener("click", () => setAuthMode("register"));
 
-document.querySelectorAll("[data-go]").forEach(button => {
-  button.addEventListener("click", () => {
-    setPage(button.dataset.go);
-  });
-});
-
-// GİRİŞ / KAYIT SEÇİMİ
-
-document.querySelectorAll(".auth-tab").forEach(button => {
-  button.addEventListener("click", () => {
-    authMode = button.dataset.tab;
-
-    document.querySelectorAll(".auth-tab").forEach(tab => {
-      tab.classList.toggle("active", tab === button);
-    });
-
-    $("auth-submit").textContent =
-      authMode === "register" ? "Hesap Oluştur" : "Giriş Yap";
-
-    $("password").autocomplete =
-      authMode === "register" ? "new-password" : "current-password";
-
-    message("auth-message", "");
-  });
-});
-
-// KAYIT VE GİRİŞ
-
-$("auth-form").addEventListener("submit", async (event) => {
+$("authForm").addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const nickname = $("nickname").value.trim();
   const password = $("password").value;
 
-  if (!/^[a-zA-Z0-9_]{3,30}$/.test(nickname)) {
-    message(
-      "auth-message",
-      "Kullanıcı adı 3-30 karakter olmalı; harf, sayı ve alt çizgi içermelidir.",
-      true
-    );
-    return;
+  if (!validNickname(nickname)) {
+    return message("authMessage", "Kullanıcı adı 3-24 karakter olmalı; harf, rakam, nokta, tire ve alt çizgi kullanabilirsiniz.", true);
   }
 
   if (password.length < 8) {
-    message("auth-message", "Parola en az 8 karakter olmalıdır.", true);
-    return;
+    return message("authMessage", "Şifre en az 8 karakter olmalıdır.", true);
   }
 
-  $("auth-submit").disabled = true;
+  $("authSubmit").disabled = true;
+  message("authMessage", "İşlem gerçekleştiriliyor...");
 
   try {
-    const email = emailFromNickname(nickname);
+    const email = nicknameToEmail(nickname);
 
     if (authMode === "register") {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: { nickname }
-        }
+        options: { data: { nickname } }
       });
 
       if (error) throw error;
 
       if (!data.session) {
-        message(
-          "auth-message",
-          "Kayıt oluşturuldu. Supabase e-posta doğrulama ayarlarını kontrol edin.",
-          true
-        );
-        return;
+        message("authMessage", "Kayıt oluşturuldu. E-posta doğrulaması açıksa hesabınızı doğrulamanız gerekir.");
+      } else {
+        message("authMessage", "Kayıt başarılı.");
       }
-
-      message("auth-message", "Hesap oluşturuldu.");
     } else {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -166,28 +94,23 @@ $("auth-form").addEventListener("submit", async (event) => {
       });
 
       if (error) throw error;
+      await loadApplication();
     }
-
-    await loadApplication();
-
   } catch (error) {
-    message("auth-message", error.message || "İşlem başarısız.", true);
+    message("authMessage", error.message || "İşlem başarısız.", true);
   } finally {
-    $("auth-submit").disabled = false;
+    $("authSubmit").disabled = false;
   }
 });
 
-// PROFİL VE UYGULAMA YÜKLEME
-
 async function loadApplication() {
-  const { data: sessionData } = await supabase.auth.getSession();
-
-  if (!sessionData.session) {
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) {
     showAuth();
     return;
   }
 
-  currentUser = sessionData.session.user;
+  currentUser = userData.user;
 
   const { data: profile, error } = await supabase
     .from("profiles")
@@ -198,37 +121,23 @@ async function loadApplication() {
   if (error || !profile) {
     await supabase.auth.signOut();
     showAuth();
+    message("authMessage", "Kullanıcı profili bulunamadı. Yöneticiyle iletişime geçin.", true);
     return;
   }
 
   currentProfile = profile;
+  const isAdmin = profile.role === "admin";
 
-  showMain();
-
-  $("sidebar-username").textContent = profile.nickname;
-  $("sidebar-role").textContent =
-    profile.role === "admin" ? "Yönetici" : "Kullanıcı";
-
-  $("account-type").textContent =
-    profile.role === "admin" ? "Yönetici" : "Kullanıcı";
-
-  $("admin-nav").classList.toggle("hidden", !isAdmin());
-  $("ai-nav").classList.toggle("hidden", !isAdmin());
+  $("userLabel").textContent = profile.nickname || "Kullanıcı";
+  $("roleBadge").textContent = isAdmin ? "Yönetici" : "Kullanıcı";
+  $("accountType").textContent = isAdmin ? "Yönetici" : "Kullanıcı";
+  $("adminNav").classList.toggle("hidden", !isAdmin);
+  $("aiNav").classList.toggle("hidden", !isAdmin);
 
   await loadCategories();
-  setPage("dashboard");
+  showApp();
+  showPage("dashboard");
 }
-
-// ÇIKIŞ
-
-$("logout-button").addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  currentUser = null;
-  currentProfile = null;
-  showAuth();
-});
-
-// KATEGORİLER
 
 async function loadCategories() {
   const { data, error } = await supabase
@@ -242,330 +151,252 @@ async function loadCategories() {
   }
 
   categories = data || [];
+  $("categoryCount").textContent = categories.length;
 
-  $("category-count").textContent = categories.length;
+  $("categorySelect").replaceChildren(new Option("Kategori seçin", ""));
+  categories.forEach((category) => {
+    $("categorySelect").add(new Option(category.name, category.id));
+  });
 
-  renderCategories();
+  $("dashboardCategories").replaceChildren();
+  categories.forEach((category) => {
+    const card = document.createElement("div");
+    card.className = "category-card";
+
+    const title = document.createElement("h4");
+    title.textContent = category.name;
+
+    const description = document.createElement("p");
+    description.textContent = "Sorgulama kategorisi";
+
+    card.append(title, description);
+    $("dashboardCategories").append(card);
+  });
+
   renderAdminCategories();
 }
 
-function renderCategories() {
-  const container = $("category-list");
+function renderAdminCategories() {
+  const container = $("adminCategories");
   container.replaceChildren();
 
   if (!categories.length) {
-    const empty = document.createElement("p");
-    empty.className = "muted";
-    empty.textContent = "Henüz kategori oluşturulmamış.";
-    container.appendChild(empty);
+    container.textContent = "Henüz kategori eklenmemiş.";
     return;
   }
 
-  categories.forEach(category => {
-    const card = document.createElement("button");
-    card.className = "category-card";
-
-    const title = document.createElement("strong");
-    title.textContent = category.name;
-
-    const description = document.createElement("small");
-    description.textContent = "Sorgulama kategorisini aç";
-
-    card.append(title, description);
-
-    card.addEventListener("click", () => {
-      selectCategory(category.id);
-    });
-
-    container.appendChild(card);
-  });
-}
-
-function renderAdminCategories() {
-  const container = $("admin-category-list");
-  container.replaceChildren();
-
-  categories.forEach(category => {
+  categories.forEach((category) => {
     const row = document.createElement("div");
-    row.className = "admin-category";
+    row.className = "admin-row";
 
-    const name = document.createElement("strong");
+    const name = document.createElement("span");
     name.textContent = category.name;
 
-    const remove = document.createElement("button");
-    remove.className = "delete-button";
-    remove.textContent = "Sil";
+    const button = document.createElement("button");
+    button.className = "delete-btn";
+    button.textContent = "Sil";
+    button.addEventListener("click", () => deleteCategory(category.id));
 
-    remove.addEventListener("click", async () => {
-      if (!confirm(category.name + " kategorisini silmek istiyor musunuz?")) {
-        return;
-      }
-
-      const { error } = await supabase
-        .from("categories")
-        .delete()
-        .eq("id", category.id);
-
-      if (error) {
-        message("admin-message", error.message, true);
-        return;
-      }
-
-      if (selectedCategory?.id === category.id) {
-        selectedCategory = null;
-        $("query-workspace").classList.add("hidden");
-      }
-
-      await loadCategories();
-      message("admin-message", "Kategori silindi.");
-    });
-
-    row.append(name, remove);
-    container.appendChild(row);
+    row.append(name, button);
+    container.append(row);
   });
 }
 
-// KATEGORİ SEÇİMİ
+async function deleteCategory(id) {
+  if (!confirm("Bu kategoriyi silmek istediğinize emin misiniz?")) return;
 
-function selectCategory(id) {
-  selectedCategory = categories.find(c => c.id === id);
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+  if (error) {
+    message("categoryMessage", error.message, true);
+    return;
+  }
 
-  if (!selectedCategory) return;
-
-  currentPage = 1;
-
-  $("selected-category").textContent = selectedCategory.name;
-  $("query-workspace").classList.remove("hidden");
-  $("results-container").classList.add("hidden");
-
-  $("query-value").value = "";
-  $("query-value").focus();
-
-  setPage("queries");
+  message("categoryMessage", "Kategori silindi.");
+  await loadCategories();
 }
 
-// YENİ KATEGORİ OLUŞTURMA
-
-$("category-form").addEventListener("submit", async (event) => {
+$("categoryForm").addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  if (!isAdmin()) return;
+  if (currentProfile?.role !== "admin") return;
 
-  const apiUrl = $("new-category-url").value.trim();
-
-  let parsedUrl;
+  const apiUrl = $("apiUrl").value.trim();
 
   try {
-    parsedUrl = new URL(apiUrl);
+    const parsed = new URL(apiUrl);
+    if (parsed.protocol !== "https:") {
+      throw new Error("API adresi HTTPS kullanmalıdır.");
+    }
   } catch {
-    message("admin-message", "Geçerli bir API adresi girin.", true);
-    return;
+    return message("categoryMessage", "Geçerli bir HTTPS API adresi girin.", true);
   }
 
-  if (parsedUrl.protocol !== "https:") {
-    message("admin-message", "Yalnızca HTTPS API adresleri kabul edilir.", true);
-    return;
-  }
-
-  const category = {
-    name: $("new-category-name").value.trim(),
+  const payload = {
+    name: $("categoryName").value.trim(),
     api_url: apiUrl,
-    query_param: $("new-category-param").value.trim(),
-    results_path: $("new-category-results").value.trim(),
-    page_param: $("new-category-page").value.trim(),
-    method: $("new-category-method").value
+    method: $("apiMethod").value,
+    query_param: $("queryParam").value.trim(),
+    page_param: $("pageParam").value.trim() || "page",
+    results_path: $("resultsPath").value.trim(),
+    total_pages_path: $("totalPagesPath").value.trim()
   };
 
-  const { error } = await supabase
-    .from("categories")
-    .insert(category);
+  const { error } = await supabase.from("categories").insert(payload);
 
   if (error) {
-    message("admin-message", error.message, true);
+    message("categoryMessage", error.message, true);
     return;
   }
 
-  $("category-form").reset();
+  message("categoryMessage", "Kategori başarıyla oluşturuldu.");
+  $("categoryForm").reset();
+  $("apiMethod").value = "GET";
+  $("queryParam").value = "query";
+  $("pageParam").value = "page";
   await loadCategories();
-
-  message("admin-message", "Kategori başarıyla oluşturuldu.");
 });
 
-// API SORGULAMA
+async function runQuery(page = 1) {
+  if (!currentCategoryId || !currentQuery) return;
 
-$("query-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  if (!selectedCategory) return;
-
-  const value = $("query-value").value.trim();
-
-  if (!value) return;
-
-  currentPage = 1;
-  await runQuery();
-});
-
-async function runQuery() {
-  if (!selectedCategory) return;
-
-  message("query-message", "Sorgulama gerçekleştiriliyor...");
-
-  $("results-container").classList.add("hidden");
+  message("queryMessage", "Sorgu gerçekleştiriliyor...");
+  $("resultPanel").classList.remove("hidden");
+  $("resultOutput").textContent = "Yükleniyor...";
 
   try {
-    const token = await getToken();
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
 
-    const response = await fetch("/.netlify/functions/query", {
+    const response = await fetch("/api/query", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
-        categoryId: selectedCategory.id,
-        value: $("query-value").value.trim(),
-        page: currentPage
+        categoryId: currentCategoryId,
+        value: currentQuery,
+        page
       })
     });
 
     const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Sorgu başarısız.");
 
-    if (!response.ok) {
-      throw new Error(result.error || "Sorgulama başarısız.");
-    }
+    currentPage = result.page;
+    totalPages = result.totalPages;
 
-    totalPages = result.totalPages || 1;
-
-    $("results-content").textContent =
-      JSON.stringify(result.data, null, 2);
-
-    $("result-count").textContent =
-      "Sayfa " + currentPage + " / " + totalPages;
-
-    $("results-container").classList.remove("hidden");
-
-    renderPagination();
-
-    message("query-message", "Sorgulama tamamlandı.");
-
+    $("resultOutput").textContent = JSON.stringify(result.results, null, 2);
+    $("pageInfo").textContent = `Sayfa ${currentPage} / ${totalPages}`;
+    $("prevPage").disabled = currentPage <= 1;
+    $("nextPage").disabled = currentPage >= totalPages;
+    message("queryMessage", "Sorgu tamamlandı.");
   } catch (error) {
-    message("query-message", error.message, true);
+    $("resultOutput").textContent = "";
+    message("queryMessage", error.message, true);
   }
 }
 
-// SAYFALAMA
-
-function renderPagination() {
-  const container = $("pagination");
-  container.replaceChildren();
-
-  const maxPages = Math.min(totalPages, 100);
-
-  for (let page = 1; page <= maxPages; page++) {
-    const button = document.createElement("button");
-
-    button.textContent = page;
-
-    if (page === currentPage) {
-      button.classList.add("active");
-    }
-
-    button.addEventListener("click", async () => {
-      currentPage = page;
-      await runQuery();
-    });
-
-    container.appendChild(button);
-  }
-
-  if (currentPage < totalPages) {
-    const next = document.createElement("button");
-    next.textContent = "Sonraki →";
-
-    next.addEventListener("click", async () => {
-      currentPage++;
-      await runQuery();
-    });
-
-    container.appendChild(next);
-  }
-
-  if (currentPage > 1) {
-    const previous = document.createElement("button");
-    previous.textContent = "← Önceki";
-
-    previous.addEventListener("click", async () => {
-      currentPage--;
-      await runQuery();
-    });
-
-    container.prepend(previous);
-  }
-}
-
-// GEMINI ASİSTANI
-
-$("ai-form").addEventListener("submit", async (event) => {
+$("queryForm").addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  if (!isAdmin()) return;
+  currentCategoryId = $("categorySelect").value;
+  currentQuery = $("queryValue").value.trim();
+  currentPage = 1;
 
-  const input = $("ai-input");
-  const prompt = input.value.trim();
+  if (!currentCategoryId || !currentQuery) {
+    return message("queryMessage", "Kategori ve sorgu değeri girin.", true);
+  }
 
+  await runQuery(1);
+});
+
+$("prevPage").addEventListener("click", () => {
+  if (currentPage > 1) runQuery(currentPage - 1);
+});
+
+$("nextPage").addEventListener("click", () => {
+  if (currentPage < totalPages) runQuery(currentPage + 1);
+});
+
+function showPage(page) {
+  const pages = {
+    dashboard: ["dashboardPage", "Genel Bakış"],
+    query: ["queryPage", "Sorgulama"],
+    admin: ["adminPage", "Yönetim Paneli"],
+    assistant: ["assistantPage", "AI Asistan"]
+  };
+
+  if (!pages[page]) return;
+  if ((page === "admin" || page === "assistant") && currentProfile?.role !== "admin") return;
+
+  Object.values(pages).forEach(([id]) => $(id).classList.add("hidden"));
+  $(pages[page][0]).classList.remove("hidden");
+  $("pageTitle").textContent = pages[page][1];
+
+  document.querySelectorAll(".nav-item").forEach((item) => {
+    item.classList.toggle("active", item.dataset.page === page);
+  });
+}
+
+document.querySelectorAll(".nav-item").forEach((item) => {
+  item.addEventListener("click", () => showPage(item.dataset.page));
+});
+
+$("logoutBtn").addEventListener("click", async () => {
+  await supabase.auth.signOut();
+  currentUser = null;
+  currentProfile = null;
+  showAuth();
+});
+
+function addChatMessage(text, who) {
+  const element = document.createElement("div");
+  element.className = `chat-message ${who}`;
+  element.textContent = text;
+  $("chatMessages").append(element);
+  element.scrollIntoView({ block: "nearest" });
+}
+
+$("aiForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  if (currentProfile?.role !== "admin") return;
+
+  const prompt = $("aiInput").value.trim();
   if (!prompt) return;
 
-  addAIMessage(prompt, true);
-  input.value = "";
-
-  const loading = addAIMessage("Yanıt hazırlanıyor...", false);
+  $("aiInput").value = "";
+  addChatMessage(prompt, "user");
+  message("aiMessage", "Yanıt hazırlanıyor...");
 
   try {
-    const token = await getToken();
-
-    const response = await fetch("/.netlify/functions/gemini", {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const response = await fetch("/api/gemini", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
+        "Authorization": `Bearer ${sessionData.session?.access_token}`
       },
       body: JSON.stringify({ prompt })
     });
 
     const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "AI yanıt veremedi.");
 
-    if (!response.ok) {
-      throw new Error(result.error || "Asistan yanıt veremedi.");
-    }
-
-    loading.textContent = result.answer;
-
+    addChatMessage(result.answer, "assistant");
+    message("aiMessage", "");
   } catch (error) {
-    loading.textContent = error.message;
+    message("aiMessage", error.message, true);
   }
 });
 
-function addAIMessage(text, user) {
-  const container = $("ai-messages");
-  const element = document.createElement("div");
-
-  element.className = user ? "user-message" : "ai-message";
-  element.textContent = text;
-
-  container.appendChild(element);
-  container.scrollTop = container.scrollHeight;
-
-  return element;
-}
-
-// OTURUM KONTROLÜ
-
-supabase.auth.onAuthStateChange((event, session) => {
-  if (event === "SIGNED_OUT") {
-    showAuth();
-  }
+supabase.auth.onAuthStateChange((_event, session) => {
+  if (!session) showAuth();
 });
 
-loadApplication();
-
+(async () => {
+  const { data } = await supabase.auth.getSession();
+  if (data.session) await loadApplication();
+  else showAuth();
+})();
